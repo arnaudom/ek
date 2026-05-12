@@ -978,7 +978,143 @@ class ProjectService implements ProjectServiceInterface {
             return ['success' => FALSE, 'errors' => ['file' => 'Internal error uploading document']];
         }
     }
-   /**
+    /**
+     * Edit a project field by project code.
+     *
+     * Updates project_comment or project_description in ek_project_description,
+     * or comment in ek_project_finance.
+     * Mirrors ProjectFieldEdit::formCallback() logic:
+     *   - Appends [username] - Y-m-d stamp
+     *   - Writes to ek_project_tracker
+     *   - Sends notification via notify_user()
+     *
+     * @param string $project_code
+     *   The project code.
+     * @param string $field
+     *   One of: project_comment, project_description, comment.
+     * @param string $value
+     *   The new text value.
+     * @param int|null $project_id
+     *   Optional numeric project ID (for tracker/notify).
+     *
+     * @return array
+     *   ['success' => bool, 'error' => string|null, 'message' => string]
+     */
+    public function editProjectField($project_code, $field, $value, $project_id = null) {
+        try {
+
+            // Determine target table based on field name.
+            if ($field === 'comment') {
+                $table = 'ek_project_finance';
+            } elseif (in_array($field, ['project_comment', 'project_description'])) {
+                $table = 'ek_project_description';
+            } else {
+                return [
+                    'success' => FALSE,
+                    'error' => 'Invalid field: ' . $field . '. Allowed: project_comment, project_description, comment',
+                ];
+            }
+
+            // Retrieve current field value so we can append (not replace).
+            $current_value = $this->extdb->select($table)
+                ->fields($table, [$field])
+                ->condition('pcode', $project_code)
+                ->execute()
+                ->fetchField();
+
+            // Append user stamp to new value and concatenate with existing.
+            $processed_value = \Drupal\Component\Utility\Xss::filter($value)
+                . ' [' . \Drupal::currentUser()->getAccountName() . '] - '
+                . date('Y-m-d');
+
+            // Append the new entry before existing content,
+            // matching how the UI form builds up a history log per field.
+            $final_value = ($current_value !== NULL && $current_value !== '')
+                ? $current_value . "\n" . $processed_value . "\n" 
+                : $processed_value;
+
+            // Perform the update.
+            $update = $this->extdb->update($table)
+                ->fields([$field => $final_value])
+                ->condition('pcode', $project_code)
+                ->execute();
+
+            if (!$update) {
+                return [
+                    'success' => FALSE,
+                    'error' => 'No rows updated. Project may not exist or field value unchanged.',
+                ];
+            }
+
+            // Write to ek_project_tracker (mirrors form callback lines 627–656).
+            if ($project_id !== null) {
+                $uid = \Drupal::currentUser()->id();
+                $action = 'edit ' . str_replace('_', ' ', $field);
+                $stamp = time();
+
+                // Upsert pattern: check last entry first.
+                $query = $this->extdb->select('ek_project_tracker', 't')
+                    ->fields('t', ['pcode', 'uid', 'action', 'stamp'])
+                    ->range(0, 1)
+                    ->orderBy('stamp', 'DESC')
+                    ->condition('t.pcode', $project_code)
+                    ->execute();
+                $last_entry = $query->fetchObject();
+
+                if ($last_entry
+                    && $last_entry->pcode == $project_code
+                    && $last_entry->uid == $uid
+                    && $last_entry->action == $action) {
+                    // Update existing tracker entry timestamp.
+                    $this->extdb->update('ek_project_tracker')
+                        ->fields(['stamp' => $stamp])
+                        ->condition('pcode', $last_entry->pcode)
+                        ->condition('uid', $last_entry->uid)
+                        ->condition('action', $last_entry->action)
+                        ->condition('stamp', $last_entry->stamp)
+                        ->execute();
+                } else {
+                    // Insert new tracker entry.
+                    $this->extdb->insert('ek_project_tracker')
+                        ->fields([
+                            'pcode' => $project_code,
+                            'uid' => $uid,
+                            'stamp' => $stamp,
+                            'action' => $action,
+                        ])
+                        ->execute();
+                }
+
+                // Notify followers via notify_user (mirrors form callback lines 658–666).
+                $notify_param = serialize([
+                    'id' => $project_id,
+                    'field' => $field,
+                    'value' => '',
+                    'pcode' => $project_code,
+                ]);
+                $this->notify_user($notify_param);
+            }
+
+            return [
+                'success' => TRUE,
+                'message' => 'Field updated successfully',
+            ];
+
+        } catch (\Exception $e) {
+            $this->logger->error('Error editing project field @field for @pcode: @message', [
+                '@field' => $field,
+                '@pcode' => $project_code,
+                '@message' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => FALSE,
+                'error' => 'Error updating field: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function toggleFollow($project_id) {
