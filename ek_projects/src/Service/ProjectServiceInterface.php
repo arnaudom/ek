@@ -104,7 +104,12 @@ interface ProjectServiceInterface {
   *  @return array
   */
   public function sectionsName();
-  
+   
+ /**
+  * The project types
+  *  @return array
+  */
+  public function getProjectType(); 
   
  /**
   * Calculate ratio of filled data per project
@@ -224,24 +229,51 @@ interface ProjectServiceInterface {
  */
   public function downloadProjectDocument($document_id);
 
+ /**
+  * Upload a project document.
+  *
+  * @param string $project_code
+  *   The project code.
+  * @param array $file_data
+  *   The uploaded file data with 'name', 'tmp_name', 'size', 'type'.
+  * @param string $folder
+  *   The folder type (fi for finance, com for commercial).
+  * @param string|null $sub_folder
+  *   Optional sub folder or tag.
+  * @param string|null $comment
+  *   Optional comment.
+  *
+  * @return array
+  *   Result array with success status, document ID, or errors.
+  */
+  public function uploadProjectDocument($project_code, $file_data, $folder, $sub_folder = null, $comment = null);
+
 /**
- * Upload a project document.
+ * Create a new project via API.
  *
- * @param string $project_code
- *   The project code.
- * @param array $file_data
- *   The uploaded file data with 'name', 'tmp_name', 'size', 'type'.
- * @param string $folder
- *   The folder type (fi for finance, com for commercial).
- * @param string|null $sub_folder
- *   Optional sub folder or tag.
- * @param string|null $comment
- *   Optional comment.
+ * Mirrors NewProject form submit logic:
+ *   - Generates project code (pcode) based on settings
+ *   - Inserts into ek_project, ek_project_description,
+ *     ek_project_actionplan, ek_project_shipment, ek_project_finance
+ *   - Creates document folder
+ *   - Optionally notifies users in country
+ *
+ * @param array $data
+ *   Project creation data:
+ *   - type: (int) category ID from ek_project_type (required)
+ *   - cid: (int) country ID from ek_country (required)
+ *   - client_id: (int) client ID from ek_address_book (required)
+ *   - name: (string) project name (required)
+ *   - description: (string) project description (required)
+ *   - level: (string) "Main project" or "Sub project" (default: "Main project")
+ *   - main: (string) parent project pcode reference for Sub project (optional)
+ *   - access: (int) 1 = private (only owner), 0 = shared (default: 0)
+ *   - notify: (int) 1 = notify users in country (default: 1)
  *
  * @return array
- *   Result array with success status, document ID, or errors.
+ *   Result array with success status, project_id, pcode, or errors.
  */
-  public function uploadProjectDocument($project_code, $file_data, $folder, $sub_folder = null, $comment = null);
+ public function createProject(array $data): array;
 
 }  
   

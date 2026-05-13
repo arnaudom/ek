@@ -2,6 +2,8 @@
 
 namespace Drupal\ek_projects\Service;
 
+use Drupal\Component\Utility\Xss;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Url;
@@ -326,6 +328,24 @@ class ProjectService implements ProjectServiceInterface {
         return $sections;
     }
 
+   /**
+     * {@inheritdoc}
+     */
+    public function getProjectType() {
+        $query = $this->extdb->select('ek_project_type', 'p');
+        $query->fields('p');
+        $results = $query->execute()->fetchAll();
+        $types = [];
+            foreach ($results as $row) {
+                $types[] = [
+                    'id' => (int) $row->id,
+                    'type_name' => $row->type,
+                    'short_name' => $row->short,
+                    'group' => $row->gp,
+                ];
+            }
+        return $types;
+    }
 
     /**
      * {@inheritdoc}
@@ -1174,5 +1194,274 @@ class ProjectService implements ProjectServiceInterface {
         }
 
     }
+
+    /**
+     * {@inheritdoc}
+     */
+  public function createProject(array $data): array {
+    try {
+      // Validate required fields.
+      $required_fields = ['type', 'cid', 'client_id', 'name', 'description'];
+      $errors = [];
+      foreach ($required_fields as $field) {
+        if (!isset($data[$field]) || empty($data[$field])) {
+          $errors[$field] = "Missing required field: {$field}";
+        }
+      }
+
+      if (!empty($errors)) {
+        return [
+          'success' => FALSE,
+          'errors' => $errors,
+        ];
+      }
+
+      // Validate client exists in ek_address_book.
+      $client_id = (int) $data['client_id'];
+      $client = $this->extdb->select('ek_address_book', 'ab')
+        ->fields('ab', ['shortname'])
+        ->condition('id', $client_id)
+        ->condition('type', 1)
+        ->execute()
+        ->fetchField();
+
+      if ($client === NULL || $client === FALSE) {
+        return [
+          'success' => FALSE,
+          'errors' => ['client_id' => 'Client ID does not exist or is wrong type in address book'],
+        ];
+      }
+
+      $client_shortname = str_replace('/', '|', $client);
+
+      // Set defaults.
+      $level = isset($data['level']) ? $data['level'] : 'Main project';
+      $access_flag = isset($data['access']) ? (int) $data['access'] : 0;
+      $notify_flag = isset($data['notify']) ? (int) $data['notify'] : 1;
+
+      // Tag from company.
+      $tag_data = $this->extdb->select('ek_company', 'c')
+        ->fields('c', ['short'])
+        ->condition('id', 1)
+        ->execute()
+        ->fetchField();
+
+      // Country data.
+      $country_data = $this->extdb->select('ek_country', 'c')
+        ->fields('c', ['name', 'code'])
+        ->condition('id', (int) $data['cid'])
+        ->execute()
+        ->fetchObject();
+
+      if (!$country_data) {
+        return [
+          'success' => FALSE,
+          'errors' => ['cid' => 'Country ID does not exist'],
+        ];
+      }
+
+      // Type short name.
+      $type_data = $this->extdb->select('ek_project_type', 'p')
+        ->fields('p', ['short'])
+        ->condition('id', (int) $data['type'])
+        ->execute()
+        ->fetchField();
+
+      $type_short = str_replace('-', '_', $type_data);
+
+      // Project settings for code generation.
+      $settings_row = $this->extdb->select('ek_project_settings', 'p')
+        ->fields('p', ['settings'])
+        ->condition('coid', 0)
+        ->execute()
+        ->fetchField();
+      $s = $settings_row !== NULL ? unserialize($settings_row) : [];
+      if (!isset($s['code']) || $s['code'] == '') {
+        $s['code'] = [1, 2, 3, 4, 5, 6];
+      }
+      if (!isset($s['increment']) || $s['increment'] < 1) {
+        $s['increment'] = 1;
+      }
+
+      // Generate reference number.
+      $count_query = 'SELECT count(id) FROM {ek_project}';
+      $count = $this->extdb->query($count_query)->fetchField();
+      $ref = $count + $s['increment'];
+
+      $main_id = NULL;
+
+      if ($level == 'Main project') {
+        // Build project code based on settings.
+        $pcode = '';
+        foreach ($s['code'] as $v) {
+          switch ($v) {
+            case 0:
+              break;
+            case 1:
+              $pcode .= $tag_data . '-';
+              break;
+            case 2:
+              $pcode .= $type_short . '-';
+              break;
+            case 3:
+              $pcode .= $country_data->code . '-';
+              break;
+            case 4:
+              $pcode .= date('Y_m') . '-';
+              break;
+            case 5:
+              $pcode .= $client_shortname . '-';
+              break;
+            case 6:
+              $pcode .= $ref;
+              break;
+          }
+        }
+
+        // Normalize dashes.
+        $pcode = str_replace('---', '-', $pcode);
+        $pcode = str_replace('--', '-', $pcode);
+      } elseif ($level == 'Sub project') {
+        // Validate main project reference is provided and valid.
+        if (empty($data['main'])) {
+          return [
+            'success' => FALSE,
+            'errors' => ['main' => 'Parent project code is required for Sub project'],
+          ];
+        }
+
+        $main_pcode = trim($data['main']);
+        $parent_data = $this->extdb->select('ek_project', 'p')
+          ->fields('p', ['id', 'pcode', 'subcount'])
+          ->condition('p.pcode', $main_pcode)
+          ->execute()
+          ->fetchObject();
+
+        if (!$parent_data) {
+          return [
+            'success' => FALSE,
+            'errors' => ['main' => 'Parent project with given pcode not found'],
+          ];
+        }
+
+        $sub = $parent_data->subcount + 1;
+        $this->extdb->update('ek_project')
+          ->fields(['subcount' => $sub])
+          ->condition('id', $parent_data->id)
+          ->execute();
+        $pcode = $parent_data->pcode . '_sub' . $sub;
+        $main_id = $parent_data->id;
+      } else {
+        return [
+          'success' => FALSE,
+          'errors' => ['level' => 'Invalid level. Must be "Main project" or "Sub project"'],
+        ];
+      }
+
+      // Sanitize project name.
+      $pname = Xss::filter(strip_tags($data['name']));
+      $pname = strtolower($pname);
+      $pname = ucfirst($pname);
+
+      // Current user.
+      $uid = \Drupal::currentUser()->id();
+
+      // Insert into main table.
+      $project_fields = [
+        'pname' => $pname,
+        'client_id' => $client_id,
+        'cid' => (int) $data['cid'],
+        'date' => date('Y-m-d'),
+        'category' => (int) $data['type'],
+        'pcode' => $pcode,
+        'status' => 'open',
+        'level' => $level,
+        'main' => $main_id,
+        'subcount' => 0,
+        'priority' => 0,
+        'editor' => 0,
+        'owner' => $uid,
+        'last_modified' => time() . '|' . $uid,
+        'notify' => $uid,
+      ];
+
+      if ($access_flag == 1) {
+        $project_fields['share'] = $uid;
+      }
+
+      $pid = $this->extdb->insert('ek_project')
+        ->fields($project_fields)
+        ->execute();
+
+      // Insert into description table.
+      $desc_text = Xss::filter($data['description']);
+      $this->extdb->insert('ek_project_description')
+        ->fields([
+          'pcode' => $pcode,
+          'project_description' => $desc_text,
+          'country' => $country_data->name
+        ])
+        ->execute();
+
+      // Insert into action plan table.
+      $this->extdb->insert('ek_project_actionplan')
+        ->fields(['pcode' => $pcode])
+        ->execute();
+
+      // Insert into shipment table.
+      $this->extdb->insert('ek_project_shipment')
+        ->fields(['pcode' => $pcode])
+        ->execute();
+
+      // Insert into finance table.
+      $this->extdb->insert('ek_project_finance')
+        ->fields(['pcode' => $pcode])
+        ->execute();
+
+      // Create document folder.
+      $dir = "private://projects/documents/" . $ref;
+      \Drupal::service('file_system')->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+
+      // Invalidate cache tags.
+      Cache::invalidateTags(['project_last_block']);
+
+      // Notify users in country if requested.
+      if ($notify_flag == 1) {
+        $param = serialize([
+          'id' => $pid,
+          'field' => 'new_project',
+          'value' => $pcode,
+          'pname' => $pname,
+          'country' => $country_data->name,
+          'cid' => (int) $data['cid'],
+          'pcode' => $pcode,
+        ]);
+        $this->notify_user($param);
+      }
+
+      // Log creation.
+      $this->logger->notice("New project created via API: @pcode (id @pid)", [
+        '@pcode' => $pcode,
+        '@pid' => $pid,
+      ]);
+
+      return [
+        'success' => TRUE,
+        'project_id' => (int) $pid,
+        'project_code' => $pcode,
+        'message' => 'Project created successfully',
+      ];
+
+    } catch (\Exception $e) {
+      $this->logger->error('Error creating project via API: @message', [
+        '@message' => $e->getMessage(),
+      ]);
+
+      return [
+        'success' => FALSE,
+        'error' => 'Internal error while creating project',
+      ];
+    }
+  }
 
 }
