@@ -20,16 +20,16 @@ use Drupal\ek_admin\Access\AccessCheck;
    *
    *
    */
-     public function __construct() {
-     }
+    public function __construct() {
+    }
  
-     /**
-     * return an array of bank accounts sorted by their id ref.
-     * @param $coid = company / entity id
-     * @param $currency = currency code i.e. 'USD'
-     *
-     */
-     public static function listbankaccountsbyaid($coid = null, $currency = null, $active = 1)  {
+   /**
+    * return an array of bank accounts sorted by their id ref.
+    * @param $coid = company / entity id
+    * @param $currency = currency code i.e. 'USD'
+    *
+    */
+    public static function listbankaccountsbyaid($coid = null, $currency = null, $active = 1)  {
          $query = Database::getConnection('external_db', 'external_db')
             ->select('ek_bank_accounts', 'a');
          $query->leftJoin('ek_bank', 'b', 'a.bid = b.id');
@@ -54,17 +54,17 @@ use Drupal\ek_admin\Access\AccessCheck;
          }
    
          return $options;
-     }
+    }
  
 
-     /**
-     * return an array of banks filtered by company / entity id access
-     *
-     * used in form lists
-     */
-     public static function listBank() {
+   /**
+    *  return an array of banks filtered by company / entity id access
+    *
+    * used in form lists
+    */
+    public static function listBank() {
   
-    //get the access to companies / entity by the current user first
+     //get the access to companies / entity by the current user first
          $company = AccessCheck::GetCompanyByUser();
          $company = implode(',', $company);
     
@@ -79,13 +79,13 @@ use Drupal\ek_admin\Access\AccessCheck;
          return $options;
      }
  
-     /**
-        * return value of currency by aid for given coid
-        * @param $coid = company / entity id
-        * @param $aid = account id i.e. 12001
-        * @return string or null
-        */
-     public static function currencyByaid($coid = null, $aid = null) {
+   /**
+    * return value of currency by aid for given coid
+    * @param $coid = company / entity id
+    * @param $aid = account id i.e. 12001
+    * @return string or null
+    */
+    public static function currencyByaid($coid = null, $aid = null) {
          $query = "SELECT currency from {ek_bank_accounts} "
             . "INNER JOIN {ek_bank} ON ek_bank_accounts.bid = ek_bank.id "
             . "WHERE coid=:c and aid=:a";
@@ -94,5 +94,36 @@ use Drupal\ek_admin\Access\AccessCheck;
          $data = Database::getConnection('external_db', 'external_db')->query($query, $a);
     
          return $data->fetchField();
-     }
+    }
+
+    
+   /**
+    * Return raw bank accounts data with bank name and company name
+    * @param $coid = company / entity id (optional filter)
+    * @param $currency = currency code i.e. 'USD' (optional filter)
+    * @param $active = 1|0 or null for all (optional filter)
+    * @return array of objects with id, bank_name, coid, active, company_name
+    */
+    public static function listBankAccountsRaw($coid = null, $currency = null, $active = null) {
+         $query = Database::getConnection('external_db', 'external_db')
+            ->select('ek_bank_accounts', 'ba');
+         $query->innerJoin('ek_bank', 'b', 'ba.bid = b.id');
+         $query->leftJoin('ek_company', 'c', 'b.coid = c.id');
+         $query->fields('ba', ['id', 'active', 'currency']);
+         $query->addField('b', 'name', 'bank_name');
+         $query->addField('b', 'coid', 'coid');
+         $query->addField('c', 'name', 'company_name');
+
+         if ($coid !== null) {
+             $query->condition('b.coid', $coid, '=');
+         }
+         if ($currency !== null) {
+             $query->condition('ba.currency', $currency, '=');
+         }
+         if ($active !== null) {
+             $query->condition('ba.ACTIVE', (int) $active, '=');
+         }
+         
+         return $query->execute()->fetchAll();
+    }
  }

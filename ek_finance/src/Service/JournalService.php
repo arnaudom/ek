@@ -1589,7 +1589,7 @@ class JournalService {
                     $exchange = CurrencyData::journalexchange($j['currency'], $j['value'], $j['fxRate']);
                     self::save($j['aid'], '1', $j['coid'], 'debit', $j['source'], $j['reference'], $j['date'], $exchange, '0', $baseCurrency);                
                 }
-                
+          
                 //main  CREDIT
                 if (isset($j['provision']) && $j['provision'] == '1') {
                     $account_currency = $j['currency'];
