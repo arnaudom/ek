@@ -7,28 +7,28 @@
 
 namespace Drupal\ek_admin\Controller;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Database\Connection;
-use Drupal\Core\Database\Database;
-use Drupal\Core\Extension\ModuleHandler;
-use Drupal\Core\Flood\FloodInterface;
-use Drupal\Core\Form\FormBuilderInterface;
-use Drupal\Core\Url;
-use Drupal\Core\Cache\Cache;
-use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
 use Drupal\Core\Ajax\OpenDialogCommand;
 use Drupal\Core\Ajax\RemoveCommand;
 use Drupal\Core\Ajax\CloseDialogCommand;
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Database\Connection;
+use Drupal\Core\Database\Database;
+use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\Flood\FloodInterface;
+use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\State\StateInterface;
-use Drupal\user\Entity\User;
+use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Drupal\Component\Utility\Xss;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\FinanceSettings;
 use Drupal\ek_admin\GlobalSettings;
@@ -1286,6 +1286,27 @@ class AdminController extends ControllerBase {
             return new JsonResponse(['action' => 1]);
         }
         return new JsonResponse(['action' => 0]);
+    }
+
+    /**
+     * Util to return document autocomplete data for # mentions.
+     *
+     * Searches across ek_documents, ek_project_documents, and ek_sales_documents
+     * for documents accessible by the current user.
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *   The HTTP request with 'term' query parameter.
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     *   JSON array of {label, value} document objects.
+     */
+    public function documentsAutocomplete(Request $request) {
+        $term = Xss::filter($request->query->get('term', ''));
+        if (strlen($term) < 2) {
+            return new JsonResponse([]);
+        }
+        $service = new \Drupal\ek_admin\Service\MessagingDocumentService();
+        return $service->searchDocuments($term);
     }
 
 }

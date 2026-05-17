@@ -4,10 +4,7 @@ namespace Drupal\ek_admin\Service;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Database;
-use Drupal\Core\Url;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
-use Drupal\user\Entity\User;
-use Symfony\Component\HttpFoundation\Response;
 use Drupal\ek_admin\Access\AccessCheck;
 
 /**
@@ -260,4 +257,6 @@ class AdminService implements AdminServiceInterface {
 
         return array_values(array_unique($uids));
     }
+
+    
 }

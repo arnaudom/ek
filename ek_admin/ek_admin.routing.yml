@@ -213,6 +213,14 @@ ek_admin.user_autocomplete:
   requirements:
     _permission: 'access_user_autocomplete'
 
+
+ek_admin_documents_autocomplete:
+  path: '/ek_admin/documents-autocomplete'
+  defaults:
+    _controller: '\Drupal\ek_admin\Controller\AdminController::documentsAutocomplete'
+  requirements:
+    _permission: 'send_message'
+
 ek_admin.home:
   path: '/ek_admin/feature-reset'
   defaults:

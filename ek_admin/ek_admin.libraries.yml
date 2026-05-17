@@ -92,3 +92,11 @@ ek_admin_tageditor:
     - core/jquery
     - jquery_ui_autocomplete/autocomplete
     - core/once
+
+ek_mention_documents:
+  version: VERSION
+  js:
+    js/ek_mention_documents.js: {}
+  dependencies:
+    - core/jquery
+    - jquery_ui_autocomplete/autocomplete
