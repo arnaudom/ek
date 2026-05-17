@@ -168,8 +168,11 @@ function ek_documents_message($key, $to, $message, $uri, $filename, $mode = NULL
     $params = [];
     $site_config = \Drupal::config('system.site');
     $params['from'] = Drupal::currentUser()->getEmail();
+    // fix warning trying to access array on null / deprecated in drupal 11
+    // $logo = \Drupal::config('system.theme')->get('logo');
+    // $site_logo = \Drupal::request()->getSchemeAndHttpHost() . $logo['url'];
     $logo = \Drupal::config('system.theme')->get('logo');
-    $params['options']['logo'] = \Drupal::request()->getSchemeAndHttpHost() . $logo['url'];
+    $params['options']['logo'] = \Drupal::request()->getSchemeAndHttpHost() . theme_get_setting('logo.url');;
     $params['options']['site'] = $site_config->get('name');    
     $params['options']['stamp'] = date('F j, Y, g:i a');
     $params['options']['filename'] = $filename;
