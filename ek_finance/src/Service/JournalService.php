@@ -3484,9 +3484,76 @@ class JournalService {
         $totalcr = 0;
         $totaldb_exc = 0;
         $totalcr_exc = 0;
-        $open = self::opening(array('aid' => $param['aid'], 'coid' => $param['coid'], 'from' => $param['from']));
-        $data['opening'] = $open[0];
-        $data['opening_exchange'] = $open[1];
+        // Fix: Calculate opening balance at start of period (strictly before $param['from']),
+        // NOT at end of prior period (up to $param['from']) as opening() does.
+        // This matches the correct ledger() approach.
+        $account_query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_accounts', 't');
+        $account_query->fields('t', ['balance', 'balance_base', 'balance_date']);
+        $account_query->condition('aid', $param['aid'], '=');
+        $account_query->condition('coid', $param['coid'], '=');
+        $acc_result = $account_query->execute()->fetchObject();
+
+        if ($acc_result) {
+            // sum transaction currency - CREDIT (strictly before $param['from'])
+            $credit_q = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+            $credit_q->addExpression('SUM(value)', 'sumValue');
+            $credit_q->condition('j.exchange', 0, '=')
+                    ->condition('j.type', 'credit', '=')
+                    ->condition('j.aid', $param['aid'], '=')
+                    ->condition('j.coid', $param['coid'], '=')
+                    ->condition('j.date', $acc_result->balance_date, '>=')
+                    ->condition('j.date', $param['from'], '<');
+            $credit_val = $credit_q->execute()->fetchObject()->sumValue;
+
+            // sum transaction currency - DEBIT (strictly before $param['from'])
+            $debit_q = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+            $debit_q->addExpression('SUM(value)', 'sumValue');
+            $debit_q->condition('j.exchange', 0, '=')
+                    ->condition('j.type', 'debit', '=')
+                    ->condition('j.aid', $param['aid'], '=')
+                    ->condition('j.coid', $param['coid'], '=')
+                    ->condition('j.date', $acc_result->balance_date, '>=')
+                    ->condition('j.date', $param['from'], '<');
+            $debit_val = $debit_q->execute()->fetchObject()->sumValue;
+
+            // sum transaction exchange - CREDIT (strictly before $param['from'])
+            $credit_exc_q = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+            $credit_exc_q->addExpression('SUM(value)', 'sumValue');
+            $credit_exc_q->condition('j.exchange', 1, '=')
+                    ->condition('j.type', 'credit', '=')
+                    ->condition('j.aid', $param['aid'], '=')
+                    ->condition('j.coid', $param['coid'], '=')
+                    ->condition('j.date', $acc_result->balance_date, '>=')
+                    ->condition('j.date', $param['from'], '<');
+            $credit_exc_val = $credit_exc_q->execute()->fetchObject()->sumValue;
+
+            // sum transaction exchange - DEBIT (strictly before $param['from'])
+            $debit_exc_q = Database::getConnection('external_db', 'external_db')
+                    ->select('ek_journal', 'j');
+            $debit_exc_q->addExpression('SUM(value)', 'sumValue');
+            $debit_exc_q->condition('j.exchange', 1, '=')
+                    ->condition('j.type', 'debit', '=')
+                    ->condition('j.aid', $param['aid'], '=')
+                    ->condition('j.coid', $param['coid'], '=')
+                    ->condition('j.date', $acc_result->balance_date, '>=')
+                    ->condition('j.date', $param['from'], '<');
+            $debit_exc_val = $debit_exc_q->execute()->fetchObject()->sumValue;
+
+            // calculate value in local currency
+            $open_balance = ($acc_result->balance ?? 0) + ($credit_val ?? 0) - ($debit_val ?? 0);
+            // calculate value in base currency
+            $open_balance_base = ($acc_result->balance_base ?? 0) + (($credit_val ?? 0) + ($credit_exc_val ?? 0)) - (($debit_val ?? 0) + ($debit_exc_val ?? 0));
+        } else {
+            $open_balance = 0;
+            $open_balance_base = 0;
+        }
+
+        $data['opening'] = round($open_balance, 2);
+        $data['opening_exchange'] = round($open_balance_base, 2);
         $data['transaction'] = array();
 
         while ($r = $result->fetchObject()) {
@@ -3526,11 +3593,11 @@ class JournalService {
         $data['total_debit'] = $totaldb;
         $data['total_credit'] = $totalcr;
         $data['total_transaction'] = $totalcr - $totaldb;
-        $data['closing'] = $open[0] + $totalcr - $totaldb;
+        $data['closing'] = $open_balance + $totalcr - $totaldb;
         $data['total_debit_exchange'] = $totaldb + $totaldb_exc;
         $data['total_credit_exchange'] = $totalcr + $totalcr_exc;
         $data['total_transaction_exchange'] = $totalcr + $totalcr_exc - $totaldb - $totaldb_exc;
-        $data['closing_exchange'] = $open[1] + $totalcr - $totaldb + $totalcr_exc - $totaldb_exc;
+        $data['closing_exchange'] = $open_balance_base + $totalcr - $totaldb + $totalcr_exc - $totaldb_exc;
 
         return serialize($data);
     }
