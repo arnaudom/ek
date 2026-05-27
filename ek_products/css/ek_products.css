@@ -223,12 +223,13 @@
     text-align: center;
 }
 
-.thumbnail {
-    max-width: 100%;
+.product_thumbnail {
+    max-width: 10%;
     height: auto;
     border: 1px solid #ddd;
     border-radius: 4px;
     padding: 5px;
+    vertical-align: middle;
 }
 
 .upload-section {

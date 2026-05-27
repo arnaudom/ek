@@ -4,6 +4,7 @@ namespace Drupal\ek_products;
 
 use Drupal\Core\Database\Database;
 use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\File\FileExists;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -315,6 +316,9 @@ class ItemData {
                 $desc2 = str_ireplace($term, "<mark>" . $term . "</mark>", $r->description2);
             }
 
+            $scode = str_ireplace($term, "<mark>" . $term . "</mark>", $r->supplier_code);
+            $itemcode = str_ireplace($term, "<mark>" . $term . "</mark>", $r->itemcode);
+
             if ($option == 'image') {
                 $line = [];
                 if ($r->uri) {
@@ -324,7 +328,7 @@ class ItemData {
                         $filesystem = \Drupal::service('file_system');
                         $dir = "private://products/images/" . $r->id . "/40/";
                         $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-                        $filesystem->copy($r->uri, $thumb, FileSystemInterface::EXISTS_REPLACE);
+                        $filesystem->copy($r->uri, $thumb, FileExists::Replace);
                         //Resize after copy
                         $image_factory = \Drupal::service('image.factory');
                         $image = $image_factory->get($thumb);
@@ -340,7 +344,7 @@ class ItemData {
                 }
                 $line['picture'] = isset($pic) ? $pic : '';
                 $line['description'] = $desc;
-                $line['name'] = $r->id . " " . $r->itemcode . " " . $r->barcode . " " . $desc . " " . $r->supplier_code;
+                $line['name'] = "<span class='product_description'>" .$r->id . " " . $itemcode . " " . $r->barcode . " " . $desc . " " . $scode . "</span>";
                 $line['id'] = $r->id;
 
                 $name[] = $line;

@@ -11,6 +11,7 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InsertCommand;
 use Drupal\Core\Database\Database;
 use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\File\FileExists;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -96,12 +97,12 @@ class UploadForm extends FormBase {
                         ->fields(array('itemcode' => $itemcode, 'uri' => $filename))
                         ->execute();
 
-                //create thumbs
+                // create thumbs
                 $thumb = "private://products/images/" . $form_state->getValue('for_id') . "/40/40x40_" . basename($filename);
                 $dir = "private://products/images/" . $form_state->getValue('for_id') . "/40/";
                 $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-                $filesystem->copy($filename, $thumb, FileSystemInterface::EXISTS_REPLACE);
-                //Resize after copy
+                $filesystem->copy($filename, $thumb, FileExists::Replace);
+                // Resize after copy
                 $image_factory = \Drupal::service('image.factory');
                 $image = $image_factory->get($thumb);
                 $image->scale(40);
@@ -110,8 +111,8 @@ class UploadForm extends FormBase {
                 $thumb = "private://products/images/" . $form_state->getValue('for_id') . "/100/100x100_" . basename($filename);
                 $dir = "private://products/images/" . $form_state->getValue('for_id') . "/100/";
                 $filesystem->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-                $filesystem->copy($filename, $thumb, FileSystemInterface::EXISTS_REPLACE);
-                //Resize after copy
+                $filesystem->copy($filename, $thumb, FileExists::Replace);
+                // Resize after copy
                 $image_factory = \Drupal::service('image.factory');
                 $image = $image_factory->get($thumb);
                 $image->scale(100);
@@ -119,11 +120,11 @@ class UploadForm extends FormBase {
             }
         }
 
-        $img = "<div class='grid'><a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($filename)
+        $img = "<div class='image-item'><a href='" . \Drupal::service('file_url_generator')->generateAbsoluteString($filename)
                 . "' target='_blank'><img class='thumbnail' src="
                 . \Drupal::service('file_url_generator')->generateAbsoluteString($filename) . "></a></div>";
         $response = new AjaxResponse();
-        return $response->addCommand(new InsertCommand('#product_images', $img));
+        return $response->addCommand(new InsertCommand('.images-grid', $img));
     }
 
 }
