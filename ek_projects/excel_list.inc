@@ -56,8 +56,8 @@ $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(12);
 $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(20);
 $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(50);
 $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(50);
-$objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(50);
-$objPHPExcel->getActiveSheet()->setBreak( 'L1' , \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::BREAK_COLUMN );
+$objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(12);
+$objPHPExcel->getActiveSheet()->setBreak( 'M1' , \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::BREAK_COLUMN );
 $objPHPExcel->getActiveSheet()->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
 $objPHPExcel->getActiveSheet()->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
 // title
@@ -82,11 +82,12 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue('H5', (string)t('Completion')
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue('I5', (string)t('Value'));
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue('J5', (string)t('Description'));
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue('K5', (string)t('Comments'));
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue('L5', (string)t('Archive'));
 
-$objPHPExcel->getActiveSheet()->getStyle('A5:K5')->getFont()->setSize(12);
-$objPHPExcel->getActiveSheet()->getStyle('A5:K5')->getFont()->setBold(true);
-$objPHPExcel->getActiveSheet()->getStyle('A5:K5')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-$objPHPExcel->getActiveSheet()->getStyle('A5:K5')->getFill()->getStartColor()->setRGB('A0A0A0');
+$objPHPExcel->getActiveSheet()->getStyle('A5:L5')->getFont()->setSize(12);
+$objPHPExcel->getActiveSheet()->getStyle('A5:L5')->getFont()->setBold(true);
+$objPHPExcel->getActiveSheet()->getStyle('A5:L5')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+$objPHPExcel->getActiveSheet()->getStyle('A5:L5')->getFill()->getStartColor()->setRGB('A0A0A0');
 $i=5;
 
  WHILE ($r = $data->fetchObject()) {
@@ -112,6 +113,7 @@ $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$i", $r->completion);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$i", $r->project_amount . ' ' . $r->currency);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$i", $r->project_description);
 $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$i", $r->project_comment);
+$objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$i", ($r->archive == 0)? 'no':'yes');
 $objPHPExcel->getActiveSheet()->getStyle("J$i:K$i")->getAlignment()->setWrapText(true); 
 $objPHPExcel->getActiveSheet()->getStyle("A$i:K$i")->applyFromArray($ValignTop);
 $objPHPExcel->getActiveSheet()->getRowDimension($i)->setRowHeight(50);

@@ -396,12 +396,13 @@ class ProjectController extends ControllerBase {
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
-            $param = unserialize($param);
+            //$param = unserialize($param);
+            $p = json_decode(base64_decode($param));
             $query = "SELECT * FROM {ek_project} p "
                     . "LEFT JOIN {ek_project_description} d ON p.pcode=d.pcode "
                     . "LEFT JOIN {ek_project_finance} f on p.pcode=f.pcode "
                     . "WHERE FIND_IN_SET (id, :c ) ORDER by p.id";
-            $data = $this->extdb->query($query, [':c' => implode(',', $param)]);
+            $data = $this->extdb->query($query, [':c' => implode(',', $p)]);
 
             include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_projects') . '/excel_list.inc';
         }
