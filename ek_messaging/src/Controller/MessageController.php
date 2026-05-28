@@ -77,9 +77,11 @@ class MessageController extends ControllerBase {
             $id = 'broadcast';
         }
         $build['message_form'] = $this->formBuilder->getForm('Drupal\ek_messaging\Form\Message', $id);
-        $build['#attached'] = array(
-            'library' => array('ek_messaging/ek_messaging'),
-        );
+        $build['#attached'] = [
+            'library' => [
+                'ek_messaging/ek_messaging'
+            ],
+        ];
         return $build;
     }
 
@@ -743,5 +745,6 @@ class MessageController extends ControllerBase {
     public function autocomplete(Request $request) {
         
     }
+
 
 }

@@ -121,3 +121,4 @@ message_autocomplete:
     _controller: '\Drupal\ek_messaging\Controller\MessageController::autocomplete'
   requirements:
     _permission: 'send_message'
+

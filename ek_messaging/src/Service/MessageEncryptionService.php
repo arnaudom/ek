@@ -119,7 +119,8 @@ class MessageEncryptionService {
      * @throws \RuntimeException
      *   When decryption or authentication fails (tampered data).
      */
-    public function decrypt(string $stored): string {
+    public function decrypt(?string $stored): ?string {
+        if ($stored === null) { return null; }
         $key = $this->getKey();
         if ($key === null) {
             return $stored;
