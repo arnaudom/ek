@@ -94,190 +94,17 @@ class ProjectController extends ControllerBase {
         return array();
     }
 
+
     /**
-     * Return a search form
+     * Check if current user has the administrator role.
      *
+     * @return bool
+     *   TRUE if user is administrator, FALSE otherwise.
      */
-    /*public function search(Request $request) {
-        $build['form'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\FilterProjects');
+    protected function isAdmin(): bool {
+        return \Drupal::currentUser()->hasRole('administrator');
+    }
 
-        $access = \Drupal\ek_admin\Access\AccessCheck::GetCountryByUser();
-        $country = implode(',', $access);
-        $links = array();
-        $options = array();
-
-        if (isset($_SESSION['pjfilter']['filter'])) {
-            if (isset($_SESSION['pjfilter']['keyword']) && $_SESSION['pjfilter']['keyword'] != null && $_SESSION['pjfilter']['keyword'] != '%') {
-                if (is_numeric($_SESSION['pjfilter']['keyword'])) {
-                    $id1 = '%-' . trim($_SESSION['pjfilter']['keyword']) . '%';
-                    $id2 = '%-' . trim($_SESSION['pjfilter']['keyword']) . '-sub%';
-
-                    $query = $this->extdb->select('ek_project', 'p');
-
-                    $or = $query->orConditionGroup();
-                    $or->condition('pcode', $id1, 'like');
-                    $or->condition('pcode', $id2, 'like');
-                    $data = $query
-                            ->fields('p', array('id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'))
-                            ->condition($or)
-                            ->extend('Drupal\Core\Database\Query\TableSortExtender')
-                            ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                            ->limit(10)->orderBy('id', 'ASC')
-                            ->execute();
-                } else { 
-                    $key = Xss::filter($_SESSION['pjfilter']['keyword']);
-                    if (preg_match('/#+[0-9]+/', $key)) {
-                        // to force numeric search user added # to a number
-                        $key = preg_replace('/#/', '', $key);
-                    }
-                    $keyword1 = trim($key) . '%';
-                    $keyword2 = '%' . trim($key) . '%';
-                    $query = $this->extdb->select('ek_project', 'p');
-                    $query->leftJoin('ek_project_documents', 'd', 'p.pcode=d.pcode');
-                    $query->leftJoin('ek_project_description', 't', 'p.pcode=t.pcode');
-                    $or = $query->orConditionGroup();
-                    $or->condition('p.pname', $keyword2, 'like');
-                    $or->condition('d.filename', $keyword2, 'like');
-                    $or->condition('d.comment', $keyword2, 'like');
-                    $or->condition('t.project_description', $keyword2, 'like');
-                    $or->condition('t.project_comment', $keyword2, 'like');
-                    $data = $query
-                            ->fields('p', array('id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'))
-                            ->condition($or)
-                            ->extend('Drupal\Core\Database\Query\TableSortExtender')
-                            ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                            ->limit(10)->orderBy('id', 'ASC')
-                            ->distinct()
-                            ->execute();
-                }
-            } else {
-                if ($_SESSION['pjfilter']['cid'] == 0) {
-                    $cid = '%';
-                } else {
-                    $cid = $_SESSION['pjfilter']['cid'];
-                }
-                if (in_array('%', $_SESSION['pjfilter']['supplier'])) {
-                    $_SESSION['pjfilter']['supplier'] = '%';
-                }
-                if (in_array('%', $_SESSION['pjfilter']['client'])) {
-                    $_SESSION['pjfilter']['client'] = '%';
-                }
-
-                $query = $this->extdb->select('ek_project', 'p');
-                $query->leftJoin('ek_project_description', 'd', 'd.pcode=p.pcode');
-                $query
-                        ->fields('p', array('id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'))
-                        ->condition('cid', $cid, 'like')
-                        ->condition('category', $_SESSION['pjfilter']['type'], 'like')
-                        ->condition('status', $_SESSION['pjfilter']['status'], 'like');
-
-                if ($_SESSION['pjfilter']['client'] != '%') {
-                    $query->condition('client_id', $_SESSION['pjfilter']['client'], 'IN');
-                }
-
-                if ($_SESSION['pjfilter']['date'] == '1') {
-                    $query->condition('date', $_SESSION['pjfilter']['start'], '>=');
-                    $query->condition('date', $_SESSION['pjfilter']['end'], '<=');
-                }
-
-                if ($_SESSION['pjfilter']['supplier'] != '%') {
-                    // a project can have multiple suppliers
-
-                    $or = $query->orConditionGroup();
-                    foreach ($_SESSION['pjfilter']['supplier'] as $key => $id) {
-                        $or->condition('supplier_offer', $id . ',%', 'like');
-                        $or->condition('supplier_offer', '%,' . $id . ',%', 'like');
-                        $or->condition('supplier_offer', '%,' . $id, 'like');
-                        $or->condition('supplier_offer', $id, '=');
-                    }
-
-                    $query->condition($or);
-                } else {
-                    
-                }
-
-                $data = $query
-                        ->extend('Drupal\Core\Database\Query\TableSortExtender')
-                        ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                        ->limit(30)->orderBy('id', 'ASC')
-                        ->execute();
-            }
-
-            $i = 0;
-            $archive = [0 => $this->t('no'), 1 => $this->t('yes')];
-            $excel = [];
-            while ($r = $data->fetchObject()) {
-                if (in_array($r->cid, $access)) {//filter access by country
-                    $i++;
-                    array_push($excel, $r->id);
-                    $pcode = $this->projectService->geturl($r->id);
-                    $country = $this->extdb->query("SELECT name FROM {ek_country} WHERE id=:cid", array(':cid' => $r->cid))->fetchField();
-                    $category = $this->extdb->query("SELECT type FROM {ek_project_type} WHERE id=:t", array(':t' => $r->category))->fetchField();
-
-                    $route = Url::fromRoute('ek_projects_archive', ['id' => $r->id], array())->toString();
-                    $archive_button = "<a id='arch" . $r->id . "' title='" . $this->t('change archive status') . "' href='" . $route . "' class='use-ajax'>" . $archive[$r->archive] . '</a>';
-
-                    $options[$i] = array(
-                        'reference' => ['data' => ['#markup' => $pcode]],
-                        'date' => $r->date,
-                        'name' => $r->pname,
-                        'country' => $country,
-                        'category' => $category,
-                        'status' => $r->status,
-                        'archive' => ['data' => ['#markup' => $archive_button]],
-                    );
-                }
-            }
-            $url = Url::fromRoute('ek_projects_excel_list', array('param' => serialize($excel)), array())->toString();
-            $build['excel'] = ['#markup' => "<br/><a href='" . $url . "'>" . $this->t('Excel') . "</a>"];
-        }
-
-        $header = array(
-            'reference' => array(
-                'data' => $this->t('Reference'),
-                'class' => array(RESPONSIVE_PRIORITY_LOW),
-            ),
-            'date' => array(
-                'data' => $this->t('Date'),
-                'class' => array(RESPONSIVE_PRIORITY_LOW),
-            ),
-            'name' => array(
-                'data' => $this->t('Name'),
-                'class' => array(RESPONSIVE_PRIORITY_MEDIUM),
-            ),
-            'country' => array(
-                'data' => $this->t('Country'),
-                'class' => array(RESPONSIVE_PRIORITY_LOW),
-            ),
-            'category' => array(
-                'data' => $this->t('Category'),
-            ),
-            'status' => array(
-                'data' => $this->t('Status'),
-            ),
-            'archive' => array(
-                'data' => $this->t('Archive'),
-            ),
-        );
-
-        $build['project_list'] = array(
-            '#type' => 'table',
-            '#header' => $header,
-            '#rows' => $options,
-            '#attributes' => array('id' => 'projects_table'),
-            '#empty' => $this->t('No search result'),
-            '#attached' => array(
-                'library' => array('ek_projects/ek_projects_css'),
-            ),
-        );
-
-        $build['pager'] = array(
-            '#type' => 'pager',
-            '#weight' => 5,
-        );
-
-        return $build;
-    }*/
     /**
      * Return a search / listing page.
      *
@@ -310,55 +137,73 @@ class ProjectController extends ControllerBase {
         if ($keyword !== '' && $keyword !== '%') {
 
             if (is_numeric($keyword)) {
-            // Numeric: match against project reference code.
-            $id1 = '%-' . $keyword . '%';
-            $id2 = '%-' . $keyword . '-sub%';
+                // Numeric: match against project reference code.
+                $id1 = '%-' . $keyword . '%';
+                $id2 = '%-' . $keyword . '-sub%';
 
-            $query = $this->extdb->select('ek_project', 'p');
-            $or    = $query->orConditionGroup()
-                ->condition('pcode', $id1, 'LIKE')
-                ->condition('pcode', $id2, 'LIKE');
+                $query = $this->extdb->select('ek_project', 'p');
+                $or    = $query->orConditionGroup()
+                    ->condition('pcode', $id1, 'LIKE')
+                    ->condition('pcode', $id2, 'LIKE');
 
-            $data = $query
-                ->fields('p', ['id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'])
-                ->condition($or)
-                ->extend('Drupal\Core\Database\Query\TableSortExtender')
-                ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                ->limit(10)
-                ->orderBy('id', 'ASC')
-                ->execute();
+                $query->condition($or);
 
-            } else {
-            // Text: XSS-filter and search across name, documents, descriptions.
-            $key = \Drupal\Component\Utility\Xss::filter($keyword);
+                // Apply restriction for non-admins
+                if (!$this->isAdmin()) {
+                    $query->where('NOT (p.status = :status AND p.archive = :archive)', [
+                        ':status'  => 'completed',
+                        ':archive' => 1,
+                    ]);
+                }
 
-            // Allow user to prefix a number with # to force a numeric-style lookup.
-            if (preg_match('/^#+([0-9]+)$/', $key, $m)) {
-                $key = $m[1];
-            }
+                $data = $query
+                    ->fields('p', ['id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'])
+                    ->extend('Drupal\Core\Database\Query\TableSortExtender')
+                    ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
+                    ->limit(10)
+                    ->orderBy('id', 'ASC')
+                    ->execute();
 
-            $keyword2 = '%' . trim($key) . '%';
+                } else {
+                // Text: XSS-filter and search across name, documents, descriptions.
+                $key = \Drupal\Component\Utility\Xss::filter($keyword);
 
-            $query = $this->extdb->select('ek_project', 'p');
-            $query->leftJoin('ek_project_documents',   'd', 'p.pcode = d.pcode');
-            $query->leftJoin('ek_project_description', 't', 'p.pcode = t.pcode');
+                // Allow user to prefix a number with # to force a numeric-style lookup.
+                if (preg_match('/^#+([0-9]+)$/', $key, $m)) {
+                    $key = $m[1];
+                }
 
-            $or = $query->orConditionGroup()
-                ->condition('p.pname',              $keyword2, 'LIKE')
-                ->condition('d.filename',           $keyword2, 'LIKE')
-                ->condition('d.comment',            $keyword2, 'LIKE')
-                ->condition('t.project_description',$keyword2, 'LIKE')
-                ->condition('t.project_comment',    $keyword2, 'LIKE');
+                $keyword2 = '%' . trim($key) . '%';
 
-            $data = $query
-                ->fields('p', ['id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'])
-                ->condition($or)
-                ->distinct()
-                ->extend('Drupal\Core\Database\Query\TableSortExtender')
-                ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                ->limit(10)
-                ->orderBy('id', 'ASC')
-                ->execute();
+                $query = $this->extdb->select('ek_project', 'p');
+                $query->leftJoin('ek_project_documents',   'd', 'p.pcode = d.pcode');
+                $query->leftJoin('ek_project_description', 't', 'p.pcode = t.pcode');
+
+                $or = $query->orConditionGroup()
+                    ->condition('p.pname',              $keyword2, 'LIKE')
+                    ->condition('d.filename',           $keyword2, 'LIKE')
+                    ->condition('d.comment',            $keyword2, 'LIKE')
+                    ->condition('t.project_description',$keyword2, 'LIKE')
+                    ->condition('t.project_comment',    $keyword2, 'LIKE');
+
+                $query->condition($or);
+
+                // Apply restriction for non-admins
+                if (!$this->isAdmin()) {
+                    $query->where('NOT (p.status = :status AND p.archive = :archive)', [
+                        ':status'  => 'completed',
+                        ':archive' => 1,
+                    ]);
+                }
+
+                $data = $query
+                    ->fields('p', ['id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'])
+                    ->distinct()
+                    ->extend('Drupal\Core\Database\Query\TableSortExtender')
+                    ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
+                    ->limit(10)
+                    ->orderBy('id', 'ASC')
+                    ->execute();
             }
 
         // ================================================================== //
@@ -384,47 +229,54 @@ class ProjectController extends ControllerBase {
 
             // Only join description table when we actually filter on supplier.
             if (!$use_all_suppliers) {
-            $query->leftJoin('ek_project_description', 'd', 'd.pcode = p.pcode');
+                $query->leftJoin('ek_project_description', 'd', 'd.pcode = p.pcode');
             }
 
             $query
-            ->fields('p', ['id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'])
-            ->condition('cid',      $cid_value,    'LIKE')
-            ->condition('category', $filter_type,  'LIKE')
-            ->condition('status',   $filter_status,'LIKE');
+                ->fields('p', ['id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'])
+                ->condition('cid',      $cid_value,    'LIKE')
+                ->condition('category', $filter_type,  'LIKE')
+                ->condition('status',   $filter_status,'LIKE');
 
             if (!$use_all_clients) {
-            // Cast to int array to prevent injection via multiselect values.
-            $safe_clients = array_map('intval', $filter_client);
-            $query->condition('p.client_id', $safe_clients, 'IN');
+                // Cast to int array to prevent injection via multiselect values.
+                $safe_clients = array_map('intval', $filter_client);
+                $query->condition('p.client_id', $safe_clients, 'IN');
             }
 
             if ($filter_date == 1) {
-            $query
-                ->condition('p.date', $filter_start, '>=')
-                ->condition('p.date', $filter_end,   '<=');
+                $query
+                    ->condition('p.date', $filter_start, '>=')
+                    ->condition('p.date', $filter_end,   '<=');
             }
 
             if (!$use_all_suppliers) {
-            // A project stores suppliers as a CSV in supplier_offer.
-            // Build OR conditions to find $id anywhere in the CSV.
-            $or = $query->orConditionGroup();
-            foreach ($filter_supplier as $id) {
-                $id = (int) $id; // safe cast
-                $or->condition('d.supplier_offer', $id . ',%',  'LIKE')  // first item
-                ->condition('d.supplier_offer', '%,' . $id . ',%', 'LIKE') // middle
-                ->condition('d.supplier_offer', '%,' . $id, 'LIKE')  // last item
-                ->condition('d.supplier_offer', (string) $id, '=');  // only item
+                // Build OR conditions for supplier
+                $or = $query->orConditionGroup();
+                foreach ($filter_supplier as $id) {
+                    $id = (int) $id; // safe cast
+                    $or->condition('d.supplier_offer', $id . ',%',  'LIKE')  
+                    ->condition('d.supplier_offer', '%,' . $id . ',%', 'LIKE') 
+                    ->condition('d.supplier_offer', '%,' . $id, 'LIKE')  
+                    ->condition('d.supplier_offer', (string) $id, '=');  
+                }
+                $query->condition($or);
             }
-            $query->condition($or);
+
+            // Apply restriction for non-admins
+            if (!$this->isAdmin()) {
+                $query->where('NOT (p.status = :status AND p.archive = :archive)', [
+                        ':status'  => 'completed',
+                        ':archive' => 1,
+                ]);
             }
 
             $data = $query
-            ->extend('Drupal\Core\Database\Query\TableSortExtender')
-            ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-            ->limit(30)
-            ->orderBy('id', 'ASC')
-            ->execute();
+                ->extend('Drupal\Core\Database\Query\TableSortExtender')
+                ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
+                ->limit(30)
+                ->orderBy('id', 'ASC')
+                ->execute();
         }
 
         // ================================================================== //
@@ -488,6 +340,7 @@ class ProjectController extends ControllerBase {
             ];
             }
     }
+    
 
     // Excel export link — use base64(json) instead of serialize() for safety.
     if ($excel) {
@@ -590,8 +443,11 @@ class ProjectController extends ControllerBase {
                         ->fields('ab', ['id', 'name'])
                         ->execute()->fetchAllKeyed();
 
-        if (!$this->projectService->validate_access($id)) {
+        $hasAccess = $this->projectService->validate_access($id);
+        if ($hasAccess == false) {
             return $items['form'] = $this->formBuilder->getForm('Drupal\ek_projects\Form\AccessRequest', $id);
+        } elseif($hasAccess === 'not_found') {
+            return ['#markup' => 'not found'];
         } else {
 
             $settings = ['id' => $id, 'view' => true];
@@ -2479,14 +2335,21 @@ class ProjectController extends ControllerBase {
             $or->condition('pcode', $text, 'like');
             $or->condition('pname', $text, 'like');
 
+            $query->fields('p', array('id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'))
+                    ->condition($or);
 
-            $data = $query
-                    ->fields('p', array('id', 'cid', 'pname', 'pcode', 'status', 'category', 'date', 'archive'))
-                    ->condition($or)
-                    ->condition('level', $level, 'like')
-                    ->condition('status', $status, 'like')
-                    ->execute();
+            if (!$this->isAdmin()) {
+                // This tells SQL explicitly: Filter out rows matching this exact criteria
+                $query->where('NOT (p.status = :status AND p.archive = :archive)', [
+                    ':status'  => 'completed',
+                    ':archive' => 1,
+                ]);
+            }
 
+            $query->condition('level', $level, 'like')
+                ->condition('status', $status, 'like');
+                    
+            $data = $query->execute();
             $name = array();
             while ($r = $data->fetchAssoc()) {
                 if (strlen($r['pname']) > 15) {
@@ -2520,6 +2383,14 @@ class ProjectController extends ControllerBase {
                 $query->fields('d', ['id', 'fid', 'filename', 'uri']);
                 $query->distinct();
                 $query->condition('filename', $key, 'like');
+
+                if (!$this->isAdmin()) {
+                    // This tells SQL explicitly: Filter out rows matching this exact criteria
+                    $query->where('NOT (p.status = :status AND p.archive = :archive)', [
+                        ':status'  => 'completed',
+                        ':archive' => 1,
+                    ]);
+                }
 
                 $Obj = $query->execute();
 

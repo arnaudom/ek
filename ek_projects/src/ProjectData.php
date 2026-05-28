@@ -23,7 +23,7 @@ class ProjectData {
     /**
      * @return
      *  an array of projects by user access - country / company
-     *  classified projects per staus and return array $key => $description
+     *  classified projects per status and return array $key => $description
      *
      * where $key = project code
      * $descritopn = extended description parameters (ie code, name, status)

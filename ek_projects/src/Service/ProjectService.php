@@ -208,9 +208,13 @@ class ProjectService implements ProjectServiceInterface {
         }
 
         $query = $this->extdb->select('ek_project', 'p');
-        $query->fields('p', ['cid', 'share', 'deny']);
+        $query->fields('p', ['cid', 'share', 'deny', 'status', 'archive']);
         $query->condition('id', $id);
         $data = $query->execute()->fetchObject();
+
+        if($data->status == 'completed' && $data->archive == 1 && !\Drupal::currentUser()->hasRole('administrator')) {
+            return "not_found";
+        }
 
         $query = $this->extdb->select('ek_country', 'c');
         $query->fields('c', ['access']);

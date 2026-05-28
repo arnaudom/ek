@@ -29,6 +29,16 @@ class SearchProject extends FormBase {
     protected $projectService;
 
     /**
+     * Check if current user has the administrator role.
+     *
+     * @return bool
+     *   TRUE if user is administrator, FALSE otherwise.
+     */
+    protected function isAdmin(): bool {
+        return \Drupal::currentUser()->hasRole('administrator');
+    }
+
+    /**
      * {@inheritdoc}
      */
     public static function create(ContainerInterface $container) {
@@ -91,22 +101,29 @@ class SearchProject extends FormBase {
     public function submitForm(array &$form, FormStateInterface $form_state) {
         $i = 0;
         $list = '<ul>';
+
+        // Build archive exclusion clause for non-admin users.
+        $archive_exclude = '';
+        if (!$this->isAdmin()) {
+            $archive_exclude = " AND NOT (status = 'completed' AND archive = '1')";
+        }
+
         if (is_numeric($form_state->getValue('search'))) {
             $id1 = '%-' . trim($form_state->getValue('search')) . '%';
             $id2 = '%-' . trim($form_state->getValue('search')) . '-sub%';
             $a = array(':id1' => $id1, ':id2' => $id2);
-            $query = 'SELECT id,pcode,pname from {ek_project} WHERE pcode like :id1 or id like :id2';
+            $query = "SELECT id,pcode,pname from {ek_project} WHERE (pcode like :id1 or id like :id2){$archive_exclude}";
             $data = Database::getConnection('external_db', 'external_db')->query($query, $a);
         } else {
             $key = '%' . Xss::filter(trim($form_state->getValue('search'))) . '%';
             $a = array(':key' => $key);
-            $query = 'SELECT id,pcode,pname FROM {ek_project} WHERE pname like :key';
+            $query = "SELECT id,pcode,pname FROM {ek_project} WHERE pname like :key{$archive_exclude}";
             $data = Database::getConnection('external_db', 'external_db')->query($query, $a);
 
             $query = 'SELECT p.id, p.pcode, pname FROM {ek_project} p '
                     . 'LEFT JOIN {ek_project_documents} d '
                     . 'ON p.pcode=d.pcode '
-                    . 'WHERE filename like :id1';
+                    . "WHERE filename like :id1{$archive_exclude}";
 
             $id1 = '%' . trim($form_state->getValue('search')) . '%';
             $a = array(':id1' => $id1);
