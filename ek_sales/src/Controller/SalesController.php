@@ -24,6 +24,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\ek_finance\Journal;
+use Drupal\ek_finance\FinanceSettings;
 
 /**
  * Controller routines for ek module routes.
@@ -86,6 +87,344 @@ class SalesController extends ControllerBase {
      */
     public function ManageSales(Request $request) {
         return array('#markup' => '');
+    }
+
+    /**
+     * @file
+     * agingAnalytics() method to add to SalesController.
+     * The page renders:
+     *   1. Company filter form
+     *   2. Four KPI summary cards (markup)
+     *   3. Three named chart <div> placeholders
+     *   4. A detail table of the raw rows grouped by period bucket
+     */
+
+    public function agingAnalytics(): array {
+    
+        $build = [];
+    
+        // -----------------------------------------------------------------------
+        // 1. Company filter
+        // -----------------------------------------------------------------------
+        $build['filter_coid'] = $this->formBuilder->getForm(
+            'Drupal\ek_admin\Form\FilterCompany'
+        );
+    
+        if (!isset($_SESSION['coidfilter']['coid'])) {
+            return $build;
+        }
+    
+        $coid = $_SESSION['coidfilter']['coid'];
+    
+        // -----------------------------------------------------------------------
+        // 2. Base currency
+        // -----------------------------------------------------------------------
+        $baseCurrency = '';
+        if ($this->moduleHandler->moduleExists('ek_finance')) {
+            $settings = new FinanceSettings();
+            $baseCurrency = $settings->get('baseCurrency');
+        }
+    
+        // -----------------------------------------------------------------------
+        // 3. Reference data (companies + address book)
+        // -----------------------------------------------------------------------
+        $db = Database::getConnection('external_db', 'external_db');
+    
+        $companies = $db->query("SELECT id, name FROM {ek_company}")
+            ->fetchAllKeyed();
+    
+        $abook = $db->query("SELECT id, name FROM {ek_address_book}")
+            ->fetchAllKeyed();
+    
+        // -----------------------------------------------------------------------
+        // 4. Bucket definitions (order matters: oldest overdue → furthest future)
+        // -----------------------------------------------------------------------
+        $buckets = [
+            'a' => ['label' => $this->t('More than 120 days overdue'),  'min' => 121,  'max' => PHP_INT_MAX, 'type' => 'overdue'],
+            'b' => ['label' => $this->t('90 – 120 days overdue'),       'min' => 91,   'max' => 120,        'type' => 'overdue'],
+            'c' => ['label' => $this->t('60 – 90 days overdue'),        'min' => 61,   'max' => 90,         'type' => 'overdue'],
+            'd' => ['label' => $this->t('30 – 60 days overdue'),        'min' => 31,   'max' => 60,         'type' => 'overdue'],
+            'e' => ['label' => $this->t('0 – 30 days overdue'),         'min' => 0,    'max' => 30,         'type' => 'soon'],
+            'f' => ['label' => $this->t('Due within 30 days'),          'min' => -30,  'max' => -1,         'type' => 'soon'],
+            'g' => ['label' => $this->t('Due in 30 – 60 days'),         'min' => -60,  'max' => -31,        'type' => 'future'],
+            'h' => ['label' => $this->t('Due in 60 – 90 days'),         'min' => -90,  'max' => -61,        'type' => 'future'],
+            'i' => ['label' => $this->t('Due in more than 90 days'),    'min' => PHP_INT_MIN, 'max' => -91, 'type' => 'future'],
+        ];
+    
+        // -----------------------------------------------------------------------
+        // 5. Helper: query one table and return bucketed results
+        // -----------------------------------------------------------------------
+        $processTable = function (
+            string $table,
+            string $amountPaidField,   // 'amountpaid' | 'amountreceived'
+            string $detailsTable,
+            string $printRoute
+        ) use ($db, $coid, $abook, $companies, $buckets): array {
+    
+            $alias = substr($table, -1); // last char of table name as alias
+    
+            $fields = [
+                'id', 'head', 'allocation', 'serial', 'client', 'status',
+                'title', 'currency', 'date', 'due',
+                'amount', $amountPaidField, 'amountbase', 'balancebase',
+                'pcode', 'taxvalue',
+            ];
+    
+            $query = $db->select($table, $alias);
+            $or    = $query->orConditionGroup()
+                ->condition("{$alias}.status", '0', '=')
+                ->condition("{$alias}.status", '2', '=');
+    
+            $rows = $query
+                ->fields($alias, $fields)
+                ->condition($or)
+                ->condition("{$alias}.head", $coid, '=')
+                ->orderBy('date', 'ASC')
+                ->execute()
+                ->fetchAll();
+    
+            $today   = date('Y-m-d');
+            $bucketed = array_fill_keys(array_keys($buckets), []);
+    
+            foreach ($rows as $r) {
+                $due = date(
+                    'Y-m-d',
+                    strtotime(date('Y-m-d', strtotime($r->date)) . '+' . $r->due . ' days')
+                );
+                $age = (int) round(
+                    (strtotime($today) - strtotime($due)) / 86400
+                );
+    
+                // Determine remaining value
+                if ($r->status == 2) {
+                    $remaining     = $r->amount - $r->{$amountPaidField};
+                    $baseRemaining = $r->balancebase;
+                    $statusLabel   = $this->t('Partially paid');
+                } else {
+                    $remaining     = $r->amount;
+                    $baseRemaining = $r->amountbase;
+                    $statusLabel   = '';
+                }
+    
+                // Tax
+                $tax = 0;
+                if ($r->taxvalue != 0) {
+                    $taxable = $db->query(
+                        "SELECT SUM(total) FROM {{$detailsTable}} WHERE serial = :s AND opt = :o",
+                        [':s' => $r->serial, ':o' => 1]
+                    )->fetchField();
+                    $tax = (float) $taxable * $r->taxvalue / 100;
+                }
+    
+                // Client link
+                $clientLink = \Drupal\ek_address_book\AddressBookData::geturl($r->client);
+                $reference  = $clientLink;
+                if ($r->pcode !== 'n/a' && $this->moduleHandler->moduleExists('ek_projects')) {
+                    $reference .= '<br/>' . \Drupal::service('project.service')
+                        ->geturl($r->pcode, null, null, true);
+                }
+    
+                $numberLink = "<a href='"
+                    . Url::fromRoute($printRoute, ['id' => $r->id])->toString()
+                    . "'>" . $r->serial . "</a>";
+    
+                // Build row data
+                $rowData = [
+                    'id'          => $r->id,
+                    'serial'      => $r->serial,
+                    'numberLink'  => $numberLink,
+                    'client'      => $abook[$r->client] ?? '',
+                    'reference'   => $reference,
+                    'currency'    => $r->currency,
+                    'remaining'   => $remaining,
+                    'baseValue'   => $baseRemaining,
+                    'tax'         => $tax,
+                    'status'      => $statusLabel,
+                    'age'         => $age,
+                    'due'         => $due,
+                ];
+    
+                // Assign to bucket
+                foreach ($buckets as $key => $bucket) {
+                    if ($age >= $bucket['min'] && $age <= $bucket['max']) {
+                        $bucketed[$key][] = $rowData;
+                        break;
+                    }
+                }
+            }
+    
+            return $bucketed;
+        };
+    
+        // -----------------------------------------------------------------------
+        // 6. Run both queries
+        // -----------------------------------------------------------------------
+        $invoiceBuckets  = $processTable(
+            'ek_sales_invoice',
+            'amountreceived',
+            'ek_sales_invoice_details',
+            'ek_sales.invoices.print_html'
+        );
+    
+        $purchaseBuckets = $processTable(
+            'ek_sales_purchase',
+            'amountpaid',
+            'ek_sales_purchase_details',
+            'ek_sales.purchases.print_html'
+        );
+    
+        // -----------------------------------------------------------------------
+        // 7. Aggregate totals per bucket for KPI cards and chart data
+        // -----------------------------------------------------------------------
+        $invTotals = $purTotals = [];
+        foreach (array_keys($buckets) as $key) {
+            $invTotals[$key] = array_sum(array_column($invoiceBuckets[$key],  'baseValue'));
+            $purTotals[$key] = array_sum(array_column($purchaseBuckets[$key], 'baseValue'));
+        }
+    
+        $overdueKeys = ['a', 'b', 'c', 'd', 'e'];
+        $soonKeys    = ['f'];
+        $futureKeys  = ['g', 'h', 'i'];
+    
+        $kpi = [
+            'invOverdue'  => array_sum(array_intersect_key($invTotals, array_flip($overdueKeys))),
+            'invSoon'     => array_sum(array_intersect_key($invTotals, array_flip($soonKeys))),
+            'invFuture'   => array_sum(array_intersect_key($invTotals, array_flip($futureKeys))),
+            'invTotal'    => array_sum($invTotals),
+            'purOverdue'  => array_sum(array_intersect_key($purTotals, array_flip($overdueKeys))),
+            'purSoon'     => array_sum(array_intersect_key($purTotals, array_flip($soonKeys))),
+            'purFuture'   => array_sum(array_intersect_key($purTotals, array_flip($futureKeys))),
+            'purTotal'    => array_sum($purTotals),
+        ];
+        $kpi['netPosition'] = $kpi['invTotal'] - $kpi['purTotal'];
+    
+        // -----------------------------------------------------------------------
+        // 8. Build Morris chart data arrays
+        //    Bar chart: one bar per bucket, grouped inv vs pur
+        //    Donut charts: overdue | soon | future split for inv and pur
+        // -----------------------------------------------------------------------
+        $barData = [];
+        foreach (array_keys($buckets) as $key) {
+            $barData[] = [
+                'period'      => (string) $buckets[$key]['label'],
+                'receivable'  => round($invTotals[$key], 2),
+                'payable'     => round($purTotals[$key], 2),
+            ];
+        }
+    
+        // Donut — invoices: overdue / soon / future
+        $invDonut = [
+            ['label' => (string) $this->t('Overdue'),      'value' => round($kpi['invOverdue'], 2)],
+            ['label' => (string) $this->t('Due soon'),     'value' => round($kpi['invSoon'],    2)],
+            ['label' => (string) $this->t('Future'),       'value' => round($kpi['invFuture'],  2)],
+        ];
+    
+        // Donut — purchases
+        $purDonut = [
+            ['label' => (string) $this->t('Overdue'),      'value' => round($kpi['purOverdue'], 2)],
+            ['label' => (string) $this->t('Due soon'),     'value' => round($kpi['purSoon'],    2)],
+            ['label' => (string) $this->t('Future'),       'value' => round($kpi['purFuture'],  2)],
+        ];
+    
+        // -----------------------------------------------------------------------
+        // 9. Build detail table rows (for the collapsible per-bucket sections)
+        //    We output both inv and pur rows so JS can toggle tabs.
+        // -----------------------------------------------------------------------
+        $tableRows = [];
+        foreach (array_keys($buckets) as $key) {
+            $tableRows[$key] = [
+                'label'     => (string) $buckets[$key]['label'],
+                'type'      => $buckets[$key]['type'],
+                'invoices'  => $invoiceBuckets[$key],
+                'purchases' => $purchaseBuckets[$key],
+            ];
+        }
+    
+        // -----------------------------------------------------------------------
+        // 10. KPI summary cards markup
+        // -----------------------------------------------------------------------
+        $fmt = fn(float $v): string => $baseCurrency . ' ' . number_format($v, 2);
+        $netClass = $kpi['netPosition'] >= 0 ? 'aging-kpi--positive' : 'aging-kpi--negative';
+    
+        $kpiMarkup = '<div class="aging-kpi-grid">'
+            . '<div class="aging-kpi aging-kpi--overdue"><span class="aging-kpi__label">' . $this->t('Total overdue (receivable)') . '</span><span class="aging-kpi__value">' . $fmt($kpi['invOverdue']) . '</span></div>'
+            . '<div class="aging-kpi aging-kpi--overdue aging-kpi--payable"><span class="aging-kpi__label">' . $this->t('Total overdue (payable)') . '</span><span class="aging-kpi__value">' . $fmt($kpi['purOverdue']) . '</span></div>'
+            . '<div class="aging-kpi aging-kpi--soon"><span class="aging-kpi__label">' . $this->t('Due within 30 days (in)') . '</span><span class="aging-kpi__value">' . $fmt($kpi['invSoon']) . '</span></div>'
+            . '<div class="aging-kpi aging-kpi--soon aging-kpi--payable"><span class="aging-kpi__label">' . $this->t('Due within 30 days (out)') . '</span><span class="aging-kpi__value">' . $fmt($kpi['purSoon']) . '</span></div>'
+            . '<div class="aging-kpi ' . $netClass . ' aging-kpi--net"><span class="aging-kpi__label">' . $this->t('Net cash position') . '</span><span class="aging-kpi__value">' . $fmt($kpi['netPosition']) . '</span></div>'
+            . '</div>';
+    
+        // Chart container markup
+        $chartMarkup = '<div class="aging-charts-wrap">'
+            . '<div class="aging-chart-section">'
+            . '  <h3>' . $this->t('Receivable vs payable by period') . '</h3>'
+            . '  <div id="aging-bar-chart" style="height:280px;"></div>'
+            . '</div>'
+            . '<div class="aging-chart-section aging-chart-section--donuts">'
+            . '  <div class="aging-donut-wrap"><h3>' . $this->t('Invoices breakdown') . '</h3><div id="aging-donut-inv" style="height:220px;width:100%;"></div></div>'
+            . '  <div class="aging-donut-wrap"><h3>' . $this->t('Purchases breakdown') . '</h3><div id="aging-donut-pur" style="height:220px;width:100%;"></div></div>'
+            . '</div>'
+            . '</div>';
+    
+        // Detail table markup (bucket headers + tab-toggle; JS fills in rows)
+        $detailMarkup  = '<div class="aging-detail">';
+        $detailMarkup .= '<div class="aging-detail__tabs">'
+            . '<button class="aging-tab aging-tab--active" data-target="invoices">' . $this->t('Invoices') . '</button>'
+            . '<button class="aging-tab" data-target="purchases">' . $this->t('Purchases') . '</button>'
+            . '</div>';
+        $detailMarkup .= '<div id="aging-detail-table-wrap"></div>';
+        $detailMarkup .= '</div>';
+    
+        // -----------------------------------------------------------------------
+        // 11. Assemble $build
+        // -----------------------------------------------------------------------
+        $build['aging_kpi'] = [
+            '#type'     => 'inline_template',
+            '#template' => '{{ content|raw }}',
+            '#context'  => ['content' => $kpiMarkup],
+        ];
+    
+        $build['aging_charts'] = [
+            '#type'     => 'inline_template',
+            '#template' => '{{ content|raw }}',
+            '#context'  => ['content' => $chartMarkup],
+        ];
+    
+        $build['aging_detail'] = [
+            '#type'     => 'inline_template',
+            '#template' => '{{ content|raw }}',
+            '#context'  => ['content' => $detailMarkup],
+        ];
+    
+        // -----------------------------------------------------------------------
+        // 12. drupalSettings + libraries
+        // -----------------------------------------------------------------------
+        $build['#attached'] = [
+            'drupalSettings' => [
+                'agingAnalytics' => [
+                    'baseCurrency' => $baseCurrency,
+                    'barData'      => $barData,
+                    'invDonut'     => $invDonut,
+                    'purDonut'     => $purDonut,
+                    'tableRows'    => array_values($tableRows),
+                    // Pass KPI values for any JS-side formatting
+                    'kpi'          => array_map(fn($v) => round($v, 2), $kpi),
+                ],
+            ],
+            'library' => [
+                'ek_sales/ek_sales_css',
+                'ek_admin/ek_admin_css',
+                'ek_admin/ek_admin_charts',        // Morris + Raphael
+                'ek_sales/ek_sales_aging_charts',  // new JS file (see .js file)
+            ],
+        ];
+    
+        $build['#cache'] = [
+            'tags'     => ['sales_data'],
+            'contexts' => ['session'],   // session holds coidfilter
+        ];
+    
+        return $build;
     }
 
     /**

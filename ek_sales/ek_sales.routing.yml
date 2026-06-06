@@ -169,6 +169,14 @@ ek_sales.edit_serial:
     _permission: 'delete_invoice|delete_purchase'
     id: \d*
 
+ek_sales_aging_analytics:
+  path: 'ek_sales/aging-analytics'
+  defaults:
+    _title: 'Aging analytics'
+    _controller: '\Drupal\ek_sales\Controller\SalesController::agingAnalytics'
+  requirements:
+    _permission: 'sales_data'
+
 #purchases
 ek_sales.purchases.list:
   path: '/purchases/list'

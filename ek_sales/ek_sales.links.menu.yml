@@ -26,13 +26,21 @@ ek_sales.menu.invoices_list:
   route_name: ek_sales.invoices.list
   parent: ek_sales.menu
   weight: 3
+
+ek_sales.menu.aging_analytics:
+  title: 'Aging analytics'
+  description: 'View aging and future payments'
+  route_name: ek_sales_aging_analytics
+  parent: ek_sales.menu
+  weight: 4
+  menu_name: main
   
 ek_sales.menu.settings:
   title: 'Settings'
   description: 'Parameters'
   route_name: ek_sales_settings
   parent: ek_sales.menu
-  weight: 4
+  weight: 5
   
 #main
 ek_sales_main.menu:
@@ -67,11 +75,19 @@ ek_sales_main.menu.invoices_list:
   parent: ek_sales_main.menu
   weight: 3
   menu_name: main
-  
+
+ek_sales_main.menu.aging_analytics:
+  title: 'Aging analytics'
+  description: 'View aging and future payments'
+  route_name: ek_sales_aging_analytics
+  parent: ek_sales_main.menu
+  weight: 4
+  menu_name: main
+
 ek_sales_main.menu.settings:
   title: 'Settings'
   description: 'Parameters'
   route_name: ek_sales_settings
   parent: ek_sales_main.menu
-  weight: 4
+  weight: 5
   menu_name: main

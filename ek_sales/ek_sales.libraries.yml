@@ -142,3 +142,16 @@ ek_sales_data_charts:
     - core/drupal
     - core/drupalSettings
     - core/jquery.once
+
+ek_sales_aging_charts:
+  version: VERSION
+  css:
+    theme:
+      css/ek_sales_aging_charts.css: {}
+  js:
+    js/ek_sales_aging_charts.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+    - ek_admin/ek_admin_charts   
