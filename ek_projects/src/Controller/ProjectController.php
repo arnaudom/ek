@@ -396,7 +396,6 @@ class ProjectController extends ControllerBase {
         if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
             $markup = $this->t('Excel library not available, please contact administrator.');
         } else {
-            //$param = unserialize($param);
             $p = json_decode(base64_decode($param));
             $query = "SELECT * FROM {ek_project} p "
                     . "LEFT JOIN {ek_project_description} d ON p.pcode=d.pcode "

@@ -12,6 +12,7 @@ use Drupal\user\Entity\User;
 use Symfony\Component\HttpFoundation\Response;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\file\Entity\File;
+use Drupal\Core\File\FileExists;
 use Drupal\file\FileInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -928,7 +929,7 @@ class ProjectService implements ProjectServiceInterface {
                 $destination_uri = $destination . '/' . $filename;
             }
 
-            $uri = $file_system->copy($file_data['tmp_name'], $destination_uri, FileSystemInterface::EXISTS_REPLACE);
+            $uri = $file_system->copy($file_data['tmp_name'], $destination_uri, FileExists::Replace);
 
             if (!$uri) {
                 return ['success' => FALSE, 'errors' => ['file' => 'Failed to save file']];
