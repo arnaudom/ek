@@ -6,6 +6,10 @@ use Drupal\Component\Utility\Xss;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\Database;
+use Drupal\file\Entity\File;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\File\FileExists;
+use Drupal\file\FileInterface;
 use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -636,4 +640,117 @@ class SalesService implements SalesServiceInterface {
       'serial' => $record->serial,
     ];
   }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function uploadSalesDocument($abid, $file_data, $folder = null, $comment = null) {
+        try {
+            // Validate address book exists
+            $query = $this->extdb->select('ek_address_book', 'ab')
+                ->fields('ab', ['id', 'name', 'type'])
+                ->condition('ab.id', $abid);
+            $ab = $query->execute()->fetchObject();
+
+            if (!$ab) {
+                return ['success' => FALSE, 'errors' => ['address_book' => 'Address book not found']];
+            }
+
+            // default folder
+            if (!empty($folder) && !preg_match('/^[a-zA-Z0-9 _-]+$/', $folder)) {
+                return ['success' => FALSE, 'errors' => ['folder' => 'Folder contains invalid characters']];
+            } elseif (empty($folder)) {
+                $folder = 'no folder';
+            }
+
+            // Validate file data
+            if (empty($file_data['tmp_name']) || !file_exists($file_data['tmp_name'])) {
+                return ['success' => FALSE, 'errors' => ['file' => 'No valid file provided']];
+            }
+
+            // Validate comment if provided
+            if (!empty($comment) && !preg_match('/^[a-zA-Z0-9 _-]+$/', $comment)) {
+                return ['success' => FALSE, 'errors' => ['comment' => 'Comment contains invalid characters']];
+            }
+
+            // Build destination directory
+            $destination = "private://sales/documents/{$abid}"  ;  
+
+            /** @var \Drupal\Core\File\FileSystemInterface $file_system */
+            $file_system = \Drupal::service('file_system');
+            $file_system->prepareDirectory($destination, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+
+            // Move uploaded file to destination
+            $filename = $file_data['name'];
+            $destination_uri = $destination . '/' . $filename;
+
+            // Handle duplicate filenames
+            $counter = 0;
+            $base_name = pathinfo($filename, PATHINFO_FILENAME);
+            $extension = pathinfo($filename, PATHINFO_EXTENSION);
+            while (file_exists($file_system->realpath($destination_uri))) {
+                $counter++;
+                $filename = $base_name . '_' . $counter . '.' . $extension;
+                $destination_uri = $destination . '/' . $filename;
+            }
+
+            $uri = $file_system->copy($file_data['tmp_name'], $destination_uri, FileExists::Replace);
+
+            if (!$uri) {
+                return ['success' => FALSE, 'errors' => ['file' => 'Failed to save file']];
+            }
+
+            // Create file managed entry
+            $file = File::create([
+                'uri' => $uri,
+                'uid' => \Drupal::currentUser()->id(),
+                'filename' => $filename,
+                'filesize' => filesize($file_data['tmp_name']),
+                'filemime' => $file_data['type'] ?? mime_content_type($file_data['tmp_name']),
+                'status' => FileInterface::STATUS_PERMANENT,
+            ]);
+            $file->save();
+
+            /** @var \Drupal\file\FileUsage\FileUsageInterface $file_usage */
+            $file_usage = \Drupal::service('file.usage');
+            $file_usage->add($file, 'ek_sales', 'address_book_document', $file->id());
+
+            // Insert record into ek_sales_documents
+            
+            $fields = [
+                'abid' => $abid,
+                'filename' => $filename,
+                'uri' => $uri,
+                'comment' => $comment,
+                'date' => time(),
+                'size' => $file->getSize(),
+                'share' => 0,
+                'deny' => 0,
+                'folder' => $folder,
+            ];
+
+            $document_id = $this->extdb->insert('ek_sales_documents')
+                ->fields($fields)
+                ->execute();
+
+            // Log the action
+            $log = 'address book | ' .$abid . ' | ' . \Drupal::currentUser()->id() . ' | upload | ' . $filename;
+            $this->logger->notice($log);
+
+            return [
+                'success' => TRUE,
+                'document_id' => (int) $document_id,
+                'filename' => $filename,
+                'name' => $ab->name,
+                'type' => $ab->type,
+                'message' => 'Document uploaded successfully',
+            ];
+
+        } catch (\Exception $e) {
+            $this->logger->error('Error uploading sales document: @message', [
+                '@message' => $e->getMessage(),
+            ]);
+            return ['success' => FALSE, 'errors' => ['file' => 'Internal error uploading document']];
+        }
+    }
 }

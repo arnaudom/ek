@@ -70,4 +70,21 @@ interface SalesServiceInterface {
  */
   public function editDocument(array $data);
 
+/**
+  * Upload a sales document by abid.
+  *
+  * @param string $abid
+  *   The address book id.
+  * @param array $file_data
+  *   The uploaded file data with 'name', 'tmp_name', 'size', 'type'.
+  * @param string $folder
+  *   Optional folder or tag.
+  * @param string|null $comment
+  *   Optional comment.
+  *
+  * @return array
+  *   Result array with success status, document ID, or errors.
+  */
+  public function uploadSalesDocument($abid, $file_data, $folder = null, $comment = null);
+
 }

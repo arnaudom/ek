@@ -17,7 +17,7 @@ namespace Drupal\ek_sales\Form;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Database\Database;
 use Drupal\Core\File\FileSystemInterface;
-use \Drupal\Core\File\FileExists;
+use Drupal\Core\File\FileExists;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
