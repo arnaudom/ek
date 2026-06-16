@@ -215,7 +215,7 @@ class DocumentsService {
 
     // Load the document record.
     $query = $this->extdb->select('ek_documents', 'd');
-    $query->fields('d', ['id', 'uid', 'filename']);
+    $query->fields('d', ['id', 'uid', 'filename', 'uri']);
     $query->condition('id', $document_id);
     $doc = $query->execute()->fetchObject();
 
@@ -276,8 +276,11 @@ class DocumentsService {
       foreach (\Drupal\user\Entity\User::loadMultiple($share_uids) as $account) {
         if ($account) {
           $userData->set('ek_documents', $account->id(), $document_id, 'shared');
+          
         }
       }
+
+      ek_documents_message('share', $share_uids,"File shared in documents",$doc->uri,$doc->filename,NULL,2);
     }
 
     \Drupal\Core\Cache\Cache::invalidateTags(['shared_documents', 'new_documents_shared']);
@@ -338,16 +341,21 @@ class DocumentsService {
       return ['success' => FALSE, 'error' => 'Access denied to this document.'];
     }
 
-    // Resolve private:// URI to a real filesystem path.
-    $real_path = \Drupal::service('file_system')->realpath($doc->uri);
-    if (!$real_path || !file_exists($real_path)) {
-      return ['success' => FALSE, 'error' => 'File not found on server.'];
+    // Verify file is accessible via stream wrapper (works for local and remote/S3).
+    $handle = @fopen($doc->uri, 'r');
+    if (!$handle) {
+      return ['success' => FALSE, 'error' => 'File not found or not accessible.'];
     }
+    fclose($handle);
+
+    $name = \Drupal::currentUser()->getAccountName();
+    $log = t("User @u has downloaded private document @d (file id @i)", ['@u' => $name, '@d' => $doc->filename, '@i' => $document_id]);
+    $this->logger->notice($log);
 
     return [
       'success' => TRUE,
       'file' => [
-        'uri'      => $real_path,
+        'uri'      => $doc->uri,
         'filename' => $doc->filename,
       ],
     ];
