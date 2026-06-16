@@ -58,11 +58,12 @@ class DocumentsService {
   }
 
   /**
-   * Get documents owned by the current user.
+   * Get documents for the current user based on scope.
    *
    * @param array $options
    *   Optional filters:
-   *   - folder: (string) filter by folder/tag
+   *   - scope: 'mine' (default) | 'shared' | 'all'
+   *   - folder: (string) filter by folder/tag (mine scope only)
    *   - search: (string) filename LIKE search
    *   - from: (string) start date Y-m-d
    *   - to: (string) end date Y-m-d
@@ -71,6 +72,32 @@ class DocumentsService {
    *   Flat list of document records.
    */
   public function getMyDocuments(array $options = []): array {
+    $scope = isset($options['scope']) ? $options['scope'] : 'mine';
+
+    if ($scope === 'all') {
+      $mine   = $this->fetchOwnDocuments($options);
+      $shared = $this->fetchSharedDocuments($options);
+      return array_merge($mine, $shared);
+    }
+
+    if ($scope === 'shared') {
+      return $this->fetchSharedDocuments($options);
+    }
+
+    // Default: 'mine'.
+    return $this->fetchOwnDocuments($options);
+  }
+
+  /**
+   * Fetch documents owned by the current user.
+   *
+   * @param array $options
+   *   Filters: folder, search, from, to.
+   *
+   * @return array
+   *   List of own document records with scope='mine'.
+   */
+  protected function fetchOwnDocuments(array $options): array {
     $uid = \Drupal::currentUser()->id();
     $documents = [];
 
@@ -117,6 +144,90 @@ class DocumentsService {
         'share_uid'  => $l->share_uid,
         'share_gid'  => $l->share_gid,
         'expire'     => $l->expire ? date('Y-m-d', $l->expire) : NULL,
+        'scope'      => 'mine',
+      ];
+    }
+
+    return $documents;
+  }
+
+  /**
+   * Fetch documents shared with the current user by other users.
+   *
+   * Mirrors DocumentsData::shared_documents() logic:
+   * - share > 0 (not private)
+   * - share_uid contains the current user's ID in comma-wrapped format
+   * - non-expired (expire = 0 or expire > now)
+   *
+   * @param array $options
+   *   Filters: search, from, to.
+   *
+   * @return array
+   *   List of shared document records with scope='shared' and owner info.
+   */
+  protected function fetchSharedDocuments(array $options): array {
+    $uid = \Drupal::currentUser()->id();
+    $documents = [];
+
+    $query = $this->extdb->select('ek_documents', 'd');
+    $query->fields('d');
+    // Only documents shared (not private, uid != 0 is not needed — common docs
+    // are accessed separately; here we follow the ShareForm convention).
+    $query->condition('share', 0, '>');
+    // Current user appears in the comma-wrapped share_uid list.
+    $query->condition('share_uid', '%,' . $uid . ',%', 'LIKE');
+    // Exclude expired shares: expire=0 means no expiry.
+    $expiry_group = $query->orConditionGroup()
+      ->condition('expire', 0, '=')
+      ->condition('expire', time(), '>');
+    $query->condition($expiry_group);
+
+    if (!empty($options['search'])) {
+      $query->condition('filename', '%' . $options['search'] . '%', 'LIKE');
+    }
+
+    if (!empty($options['from'])) {
+      $query->condition('date', strtotime($options['from']), '>=');
+    }
+
+    if (!empty($options['to'])) {
+      $query->condition('date', strtotime($options['to']), '<=');
+    }
+
+    $query->orderBy('uid');
+    $query->orderBy('filename');
+
+    $list = $query->execute();
+    while ($l = $list->fetchObject()) {
+      $size_kb = 0;
+      if (is_numeric($l->size)) {
+        $size_kb = round($l->size / 1000, 2);
+      }
+
+      // Resolve owner name.
+      $owner_name = NULL;
+      $owner_account = \Drupal\user\Entity\User::load($l->uid);
+      if ($owner_account) {
+        $owner_name = $owner_account->getAccountName();
+      }
+
+      $documents[] = [
+        'id'         => (int) $l->id,
+        'uid'        => (int) $l->uid,
+        'owner_name' => $owner_name,
+        'fid'        => $l->fid,
+        'filename'   => $l->filename,
+        'uri'        => $l->uri,
+        'folder'     => $l->folder,
+        'comment'    => $l->comment,
+        'date'       => date('Y-m-d', $l->date),
+        'timestamp'  => (int) $l->date,
+        'size_kb'    => $size_kb,
+        'share'      => $l->share,
+        'share_uid'  => $l->share_uid,
+        'share_gid'  => $l->share_gid,
+        'expire'     => $l->expire ? date('Y-m-d', $l->expire) : NULL,
+        'scope'      => 'shared',
       ];
     }
 
