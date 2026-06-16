@@ -1,0 +1,4 @@
+services:
+  documents.service:
+    class: Drupal\ek_documents\Service\DocumentsService
+    arguments: ['@config.factory', '@logger.factory', '@file_system']
