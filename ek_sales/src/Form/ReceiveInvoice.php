@@ -560,31 +560,9 @@ class ReceiveInvoice extends FormBase {
         if($this_pay == $max_pay || $form_state->getValue('close') == 1) {
             $balancebase = 0;
         } else {
-            // need to estimate value based on tax applicable on total amount.
-            // value is wrong when not all items are taxed
-            $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_sales_invoice_details', 'd')
-                    ->fields('d')
-                    ->condition('serial', $data->serial)
-                    ->execute();
-                $details = $query->fetchAll();
-                $total_with_tax = 0;
-                $total_no_tax = 0;
-
-                foreach($details as $key => $line) { 
-                    if($line->opt == 0) {
-                        $total_no_tax += $line->total;
-                    } else {
-                        $total_with_tax += $line->total;
-                    }
-                }
-            $tax_ratio = 1 - ($total_with_tax / ($total_with_tax + $total_no_tax)); 
-            // the portion of payment that is subject to tax:
-            $net = ($this_pay / (1+$tax_ratio)) / (1+($data->taxvalue / 100)); 
-            // the resulting tax value:
-            $tax = $this_pay - ($net + ($net * $data->taxvalue / 100));
-            // the actual value in base currency without tax
-            $balancebase = round($data->balancebase - (($this_pay - $tax) / $rate), 2); 
+            // The payment amount is the net reduction of the balance.
+            // The journal already handles the tax split via $taxable.
+            $balancebase = round($data->balancebase - ($this_pay / $rate), 2);
         }
         
         $fields = array(
