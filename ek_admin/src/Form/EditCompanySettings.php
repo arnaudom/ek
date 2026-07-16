@@ -487,17 +487,17 @@ class EditCompanySettings extends FormBase
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
         if ($form_state->getValue('stax_rate') != '') {
-            if (!is_numeric($form_state->getValue('stax_rate')) || $form_state->getValue('stax_rate') == 0) {
+            if (!is_numeric($form_state->getValue('stax_rate')) || $form_state->getValue('stax_rate') < 0) {
                 $form_state->setErrorByName('stax_rate', $this->t('Wrong sales tax value input'));
             }
         }
         if ($form_state->getValue('wtax_rate') != '') {
-            if (!is_numeric($form_state->getValue('wtax_rate')) || $form_state->getValue('wtax_rate') == 0) {
+            if (!is_numeric($form_state->getValue('wtax_rate')) || $form_state->getValue('wtax_rate') < 0) {
                 $form_state->setErrorByName('wtax_rate', $this->t('Wrong tax value input'));
             }
         }
         if ($form_state->getValue('ytax_rate') != '') {
-            if (!is_numeric($form_state->getValue('ytax_rate')) || $form_state->getValue('ytax_rate') == 0) {
+            if (!is_numeric($form_state->getValue('ytax_rate')) || $form_state->getValue('ytax_rate') < 0) {
                 $form_state->setErrorByName('ytax_rate', $this->t('Wrong tax value input'));
             }
         }
