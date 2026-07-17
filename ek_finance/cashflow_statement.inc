@@ -490,5 +490,6 @@ $items['grand_total_exc'] = $total_assets_exc + $total_liabilities_exc + $items[
 $items['grand_total_closing'] = $total_closing_assets + $total_closing_liabilities;
 $items['grand_total_closing_exc'] = $total_closing_assets_exc + $total_closing_liabilities_exc + $items['tax_total_balance_closing']; 
 
-$items['ratio1'] = round($items['grand_total_exc']/($items['average_expenses']-$items['amortization']), $rounding);
-$items['ratio2'] = round($items['grand_total_closing_exc']/($items['average_expenses']-$items['amortization']), $rounding);
+$ratio_denominator = $items['average_expenses'] - ($items['amortization'] ?? 0);
+$items['ratio1'] = $ratio_denominator != 0 ? round($items['grand_total_exc'] / $ratio_denominator, $rounding) : 0;
+$items['ratio2'] = $ratio_denominator != 0 ? round($items['grand_total_closing_exc'] / $ratio_denominator, $rounding) : 0;
