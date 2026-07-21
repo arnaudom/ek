@@ -214,6 +214,22 @@ ek_finance_budgeting_excel:
   requirements:
     _permission: 'view_finance_reporting'
 
+# operation performance report
+ek_finance.operation_performance:
+  path: '/finance/report/operation-performance'
+  defaults:
+    _title: 'Operation Performance'
+    _controller: '\Drupal\ek_finance\Controller\ReportController::operationPerformance'
+  requirements:
+    _permission: 'view_finance_reporting'
+
+ek_finance.operation_performance_excel:
+  path: '/finance/report/operation-performance/excel/{param}'
+  defaults:
+    _controller: '\Drupal\ek_finance\Controller\ReportController::excelOperationPerformance'
+  requirements:
+    _permission: 'view_finance_reporting'
+
 ek_finance.invoice.ledger:
   path: '/finance/sales-ledger/invoice'
   defaults:

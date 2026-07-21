@@ -76,6 +76,18 @@ ek_finance.budgeting:
     theme:
       css/ek_finance_reporting.css: {}
 
+ek_finance.operation_performance:
+  version: 1
+  js:
+    js/ek_finance_operation_performance.js: {}
+  css:
+    theme:
+      css/ek_finance_operation_performance.css: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/once
+
 ek_finance.journal:
   version: 1
   js:

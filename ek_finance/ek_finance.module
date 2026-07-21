@@ -195,6 +195,11 @@ function ek_finance_theme() {
             'template' => 'ek_finance_cashflow',
             'variables' => ['items' => []],
         ],
+        // for operation performance report
+        'ek_operation_performance' => [
+            'template' => 'ek_operation_performance',
+            'variables' => ['items' => []],
+        ],
         // for iframe display / pdf
         'iframe' => [
             'template' => 'iframe',

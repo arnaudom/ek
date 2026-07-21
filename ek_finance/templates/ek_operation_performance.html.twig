@@ -1,0 +1,153 @@
+<div>{{ items.form }}</div>
+
+{% if items.summary is defined and items.summary.project_count is defined %}
+<div class='right' title='{{ 'Excel download'|trans }}'>{{ items.excel|raw }}</div>
+
+{% set rounding = items.rounding %}
+{% set baseCurrency = items.baseCurrency %}
+{% set year = items.year %}
+<p>{{ 'Operations'|trans }} {{ 'from'|trans }}: {{ items.fiscal_dates.from }} {{ 'to'|trans }}: {{ items.fiscal_dates.to }}</p>
+
+{# --- Summary Cards --- 
+<div class="op-summary-cards">
+    <div class="op-card">
+        <div class="op-card-label">{{ 'Total Revenue'|trans }}</div>
+        <div class="op-card-value">{{ items.summary.total_revenue|number_format(rounding) }} {{ baseCurrency }}</div>
+    </div>
+    <div class="op-card">
+        <div class="op-card-label">{{ 'Total Cost'|trans }}</div>
+        <div class="op-card-value">{{ items.summary.total_cost|number_format(rounding) }} {{ baseCurrency }}</div>
+    </div>
+    <div class="op-card">
+        <div class="op-card-label">{{ 'Gross Margin'|trans }}</div>
+        <div class="op-card-value {% if items.summary.gross_margin < 0 %}red{% endif %}">
+            {{ items.summary.gross_margin|number_format(rounding) }} {{ baseCurrency }}
+        </div>
+    </div>
+    <div class="op-card">
+        <div class="op-card-label">{{ 'GM %'|trans }}</div>
+        <div class="op-card-value {% if items.summary.gm_percent < 0 %}red{% endif %}">
+            {{ items.summary.gm_percent }}%
+        </div>
+    </div>
+    <div class="op-card">
+        <div class="op-card-label">{{ 'AR Outstanding'|trans }}</div>
+        <div class="op-card-value">{{ items.summary.ar_outstanding|number_format(rounding) }} {{ baseCurrency }}</div>
+    </div>
+    <div class="op-card">
+        <div class="op-card-label">{{ 'AP Outstanding'|trans }}</div>
+        <div class="op-card-value">{{ items.summary.ap_outstanding|number_format(rounding) }} {{ baseCurrency }}</div>
+    </div>
+    <div class="op-card">
+        <div class="op-card-label">{{ 'Net Position'|trans }}</div>
+        <div class="op-card-value {% if items.summary.net_position < 0 %}red{% endif %}">
+            {{ items.summary.net_position|number_format(rounding) }} {{ baseCurrency }}
+        </div>
+    </div>
+    <div class="op-card">
+        <div class="op-card-label">{{ 'Projects'|trans }}</div>
+        <div class="op-card-value">{{ items.summary.project_count }}</div>
+    </div>
+</div>#}
+
+{# --- Period Activity --- #}
+<table class='report'>
+    <thead>
+        <th class='column_aid header_th'>
+            <a href='#period_activity' id='period_activity_link' onclick="jQuery('#period_activity_data').toggle('slow');">
+                {{ 'Period Activity'|trans }} - {{ baseCurrency }}
+            </a>
+        </th>
+        <th class='column_value header_th'>{{ 'Amount'|trans }}</th>
+    </thead>
+    <tbody id='period_activity_data'>
+        <tr>
+            <td class='left'>{{ 'Account Receivable (period)'|trans }}</td>
+            <td class='right'>{{ items.period_activity.ar|number_format(rounding) }}</td>
+        </tr>
+        <tr>
+            <td class='left'>{{ 'Account Payable (period)'|trans }}</td>
+            <td class='right'>{{ items.period_activity.ap|number_format(rounding) }}</td>
+        </tr>
+    </tbody>
+</table>
+
+{# --- Single Project Table with Checkbox Selection --- #}
+<table class='report' id='op-project-table'>
+    <thead>
+        <th colspan=3 class='column_top header_th'></th>
+        <th colspan=2 class='column_top header_th'>{{ 'Total for period'|trans }}</th>
+        <th colspan=2 class='column_top header_th'></th>
+        <th colspan=2 class='column_top header_th'>{{ 'Total outstanding per project'|trans }}</th>
+        <th class='column_top header_th'></th>
+    </thead>
+    <thead>
+        <th class='column_check header_th'>{{ 'Select'|trans }}</th>
+        <th class='column_aid header_th'>
+            <a href='#project_data' id='project_data_link' onclick="jQuery('#project_data_body').toggle('slow');">
+                {{ 'Project Detail'|trans }} - {{ baseCurrency }}
+            </a>
+        </th>
+        <th class='column_value header_th'>{{ 'Status'|trans }}</th>
+        <th class='column_value header_th'>{{ 'Invoices'|trans }}</th>
+        <th class='column_value header_th'>{{ 'Purchases'|trans }}</th>
+        <th class='column_value header_th'>{{ 'Gross Margin'|trans }}</th>
+        <th class='column_value header_th'>{{ '%' }}</th>
+        <th class='column_value header_th'>{{ 'Invoice'|trans }}</th>
+        <th class='column_value header_th'>{{ 'Purchase'|trans }}</th>
+        <th class='column_value header_th'></th>
+    </thead>
+    <tbody id='project_data_body'>
+    {% if items.projects is empty %}
+        <tr><td colspan='10' class='center'>{{ 'No data for the selected period.'|trans }}</td></tr>
+    {% else %}
+        {% for project in items.projects %}
+        <tr class='data0{% if project.wip %} wip-row{% endif %}'>
+            <td class='center'>
+                <input type='checkbox' class='op-select-checkbox'
+                    data-revenue='{{ project.revenue }}'
+                    data-cost='{{ project.cost }}'
+                    data-pcode='{{ project.pcode }}'>
+            </td>
+            <td class='left'>{{ project.pcode_url|raw }}</td>
+            <td class='center'>{{ project.status }}</td>
+            <td class='right {% if project.revenue is not null and project.revenue == 0 %}red{% endif %}'>{{ project.revenue|number_format(rounding) }}</td>
+            <td class='right {% if project.cost is not null and project.cost == 0 %}red{% endif %}'>{{ project.cost|number_format(rounding) }}</td>
+            <td class='right {% if project.gross_margin is not null and project.gross_margin < 0 %}red{% endif %}'>
+                {{ project.gross_margin is not null ? project.gross_margin|number_format(rounding) : '--' }}
+            </td>
+            <td class='right {% if project.gm_percent is not null and project.gm_percent < 0 %}red{% endif %}'>
+                {{ project.gm_percent is not null ? project.gm_percent ~ '%' : '--' }}
+            </td>
+            <td class='right'>{{ project.ar_outstanding|number_format(rounding) }}</td>
+            <td class='right'>{{ project.ap_outstanding|number_format(rounding) }}</td>
+            <td class='center'>{{ project.wip ? 'incomplete'|trans : '' }}</td>
+        </tr>
+        {% endfor %}
+        {# Totals row #}
+        <tr class='total-row'>
+            <td class='center'></td>
+            <td class='left'><strong>{{ 'Totals'|trans }}</strong></td>
+            <td class='center'></td>
+            <td class='right'><strong><span id='op-selected-revenue'>{{ items.totals.revenue|number_format(rounding) }}</span></strong></td>
+            <td class='right'><strong><span id='op-selected-cost'>{{ items.totals.cost|number_format(rounding) }}</span></strong></td>
+            <td class='right {% if items.totals.gross_margin < 0 %}red{% endif %}'>
+                <strong>{{ items.totals.gross_margin|number_format(rounding) }}</strong>
+            </td>
+            <td class='right {% if items.totals.gm_percent < 0 %}red{% endif %}'>
+                <strong>{{ items.totals.gm_percent }}%</strong>
+            </td>
+            <td class='right'><strong></strong></td>
+            <td class='right'><strong></strong></td>
+            <td class='center'></td>
+        </tr>
+    {% endif %}
+    </tbody>
+    <tfoot>
+        
+    </tfoot>
+</table>
+
+{% else %}
+    {# No filter applied yet — just the form is shown #}
+{% endif %}

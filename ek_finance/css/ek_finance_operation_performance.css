@@ -1,0 +1,158 @@
+/* Operation Performance Report Styles */
+
+.op-summary-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.op-card {
+    flex: 1 1 180px;
+    min-width: 150px;
+    background: #f5f7fa;
+    border: 1px solid #dde3ea;
+    border-radius: 6px;
+    padding: 14px 16px;
+    text-align: center;
+}
+
+.op-card-label {
+    font-size: 0.8em;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.op-card-value {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: #333;
+}
+
+.op-card-value.red {
+    color: #c0392b;
+}
+
+/* Report tables */
+table.report {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 24px 0;
+    font-size: 0.9em;
+}
+
+table.report thead th {
+    background: #e8ecf1;
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 2px solid #ccc;
+    font-weight: 600;
+}
+
+table.report thead th.column_value {
+    text-align: right;
+}
+
+table.report thead th.column_top {
+    text-align: center;
+}
+
+table.report thead th.column_aid {
+    min-width: 140px;
+}
+
+table.report thead th.header_th a {
+    color: #2a6496;
+    text-decoration: none;
+}
+
+table.report thead th.header_th a:hover {
+    text-decoration: underline;
+}
+
+table.report tbody td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #eee;
+}
+
+table.report tbody td.right {
+    text-align: right;
+}
+
+table.report tbody td.center {
+    text-align: center;
+}
+
+table.report tbody td.left {
+    text-align: left;
+}
+
+table.report tbody td.red {
+    color: #c0392b;
+}
+
+table.report tbody tr.data0:nth-child(even) {
+    background: #fafbfc;
+}
+
+table.report tbody tr.data0:hover {
+    background: #eef3f8;
+}
+
+table.report tbody tr.total-row {
+    background: #e8ecf1;
+    font-weight: 600;
+    border-top: 2px solid #bbb;
+}
+
+table.report tbody tr.total-row td {
+    padding: 8px 10px;
+}
+
+.wip-note {
+    font-weight: normal;
+    font-size: 0.85em;
+    color: #888;
+}
+
+/* Right-aligned utility */
+.xright {
+    float: right;
+}
+
+.left {
+    float: left;
+}
+
+/* Checkbox column */
+table.report thead th.column_check {
+    min-width: 40px;
+    width: 40px;
+    text-align: center;
+}
+
+/* Checkbox sum footer */
+table.report tfoot tr.checkbox-sum-row {
+    background: #e8ecf1;
+    font-weight: 600;
+    border-top: 2px solid #bbb;
+}
+
+table.report tfoot tr.checkbox-sum-row td {
+    padding: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .op-summary-cards {
+        flex-direction: column;
+    }
+    .op-card {
+        flex: 1 1 auto;
+    }
+    table.report {
+        font-size: 0.8em;
+    }
+}

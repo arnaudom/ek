@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Drupal\ek_finance\FinanceSettings;
 use Drupal\ek_finance\Service\JournalService;
 use Drupal\ek_finance\ReportingData;
+use Drupal\ek_finance\OperationPerformanceData;
 use Drupal\ek_finance\PrintManager;
 
 /**
@@ -577,6 +578,104 @@ class ReportController extends ControllerBase {
             $extract = unserialize($param);
             $coid = $extract['coid'];
             include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/templates/excel_cash_statement.inc';
+        }
+        return ['#markup' => $markup];
+    }
+
+    /**
+     * Generate an operation performance report filtered by company and fiscal year.
+     *
+     * Tracks Account Payable, Account Receivable, Gross Margin, and Operating
+     * Profit per project/operation.
+     *
+     * @return array
+     *   Render array.
+     */
+    public function operationPerformance(Request $request) {
+
+        if ($this->moduleHandler->moduleExists('ek_projects')) {
+            $items = [];
+            $chart = $this->settings->get('chart');
+
+            $items['form'] = $this->formBuilder->getForm('Drupal\ek_finance\Form\FilterOperationPerformance');
+
+            if (isset($_SESSION['opfilter']['filter']) && $_SESSION['opfilter']['filter'] == 1) {
+                $coid = $_SESSION['opfilter']['coid'];
+                $year = $_SESSION['opfilter']['year'];
+
+                $settings = new FinanceSettings();
+                $baseCurrency = $settings->get('baseCurrency');
+                $rounding = (!null == $settings->get('rounding')) ? $settings->get('rounding') : 2;
+
+                $items['year'] = $year;
+                $items['baseCurrency'] = $baseCurrency;
+                $items['rounding'] = $rounding;
+
+                $reportData = new OperationPerformanceData($coid, $year, $baseCurrency, $rounding, $chart);
+                $data = $reportData->computeReport();
+
+                $items['summary'] = $data['summary'];
+                $items['projects'] = $data['projects'];
+                $items['totals'] = $data['totals'];
+                $items['period_activity'] = $data['period_activity'];
+                $items['fiscal_dates'] = $data['fiscal_dates'];
+
+                $param = serialize([
+                    'coid' => $coid,
+                    'year' => $year,
+                    'baseCurrency' => $baseCurrency,
+                    'rounding' => $rounding,
+                ]);
+                $excel = Url::fromRoute('ek_finance.operation_performance_excel', ['param' => $param], [])->toString();
+                $items['excel'] = [
+                    '#markup' => "<a href='" . $excel . "' title='" . $this->t('Excel download') . "'><span class='ico excel green'/></a>",
+                ];
+
+                return [
+                    '#theme' => 'ek_operation_performance',
+                    '#items' => $items,
+                    '#attached' => [
+                        'library' => ['ek_finance/ek_finance.operation_performance', 'ek_admin/ek_admin_css'],
+                    ],
+                    '#cache' => [
+                        'tags' => ['operation_performance'],
+                    ],
+                ];
+            }
+            else {
+                return $items['form'];
+            }
+        } else {
+            return ['#markup' => $this->t('This report needs Projects module to be installed.')];
+        }
+    }
+
+    /**
+     * Generate an operation performance report in Excel format.
+     *
+     * @param string $param
+     *   Serialized array with keys: coid, year, baseCurrency, rounding.
+     *
+     * @return array
+     *   Render array with markup or binary download.
+     */
+    public function excelOperationPerformance($param) {
+        $markup = [];
+        if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
+            $markup = $this->t('Excel library not available, please contact administrator.');
+        }
+        else {
+            $chart = $this->settings->get('chart');
+            $p = unserialize($param);
+            $coid = $p['coid'];
+            $year = $p['year'];
+            $baseCurrency = $p['baseCurrency'];
+            $rounding = $p['rounding'];
+
+            $reportData = new OperationPerformanceData($coid, $year, $baseCurrency, $rounding, $chart);
+            $data = $reportData->computeReport();
+
+            include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_finance') . '/templates/excel_operation_performance.inc';
         }
         return ['#markup' => $markup];
     }

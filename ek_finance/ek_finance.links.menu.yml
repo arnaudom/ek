@@ -62,13 +62,20 @@ ek_finance.reporting:
   route_name: ek_finance_reporting
   parent: ek_finance.menu
   weight: 8
+
+ek_finance.operation:
+  title: 'Operations report'
+  description: 'Yearly AP and AR per project'
+  route_name: ek_finance.operation_performance
+  parent: ek_finance.menu
+  weight: 9
   
 ek_finance.settings:
   title: 'Settings'
   description: 'Settings and parameters'
   route_name: ek_finance.admin.settings
   parent: ek_finance.menu
-  weight: 9
+  weight: 10
   
 #main
 ek_finance_main.menu:
@@ -144,6 +151,13 @@ ek_finance_main.reporting:
   parent: ek_finance_main.menu
   menu_name: main
   weight: 8
+
+ek_finance_main.operation:
+  title: 'Operations report'
+  description: 'Yearly AP and AR per project'
+  route_name: ek_finance.operation_performance
+  parent: ek_finance_main.menu
+  weight: 9
   
 ek_finance_main.settings:
   title: 'Settings'
@@ -151,4 +165,4 @@ ek_finance_main.settings:
   route_name: ek_finance.admin.settings
   parent: ek_finance_main.menu
   menu_name: main
-  weight: 9
+  weight: 10
