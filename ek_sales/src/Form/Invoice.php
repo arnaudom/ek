@@ -1514,7 +1514,7 @@ class Invoice extends FormBase {
 
         Cache::invalidateTags(['project_page_view']);
         if (isset($insert) || isset($update)) {
-            Cache::invalidateTags(['reporting']);
+            Cache::invalidateTags(['reporting', 'operation_performance']);
             \Drupal::messenger()->addStatus(t('The @doc is recorded. Ref. @r', ['@r' => $serial, '@doc' => $options[$form_state->getValue('title')]]));
 
             

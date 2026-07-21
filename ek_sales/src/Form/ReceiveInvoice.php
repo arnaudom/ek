@@ -597,7 +597,7 @@ class ReceiveInvoice extends FormBase {
                 }
             }
 
-            \Drupal\Core\Cache\Cache::invalidateTags(['reporting']);
+            \Drupal\Core\Cache\Cache::invalidateTags(['reporting', 'operation_performance']);
             $form_state->setRedirect('ek_sales.invoices.list');
         }
     }
