@@ -29,10 +29,17 @@
                     expenses = expenses - amortization;
                 }
 
-                var ratio1 = addCommas((Math.round(sum_cash / expenses)).toFixed(settings.rounding));
-                var ratio2 = addCommas((Math.round(sum_close / expenses)).toFixed(settings.rounding));
-                jQuery("#ratio1").html(ratio1);
-                jQuery("#ratio2").html(ratio2);
+                // only compute a meaningful ratio when overhead is a positive figure;
+                // a zero or negative denominator would return Infinity or a sign-flipped value.
+                if (expenses > 0) {
+                    var ratio1 = addCommas((Math.round(sum_cash / expenses)).toFixed(settings.rounding));
+                    var ratio2 = addCommas((Math.round(sum_close / expenses)).toFixed(settings.rounding));
+                    jQuery("#ratio1").html(ratio1);
+                    jQuery("#ratio2").html(ratio2);
+                } else {
+                    jQuery("#ratio1").html('0');
+                    jQuery("#ratio2").html('0');
+                }
 
             });
 

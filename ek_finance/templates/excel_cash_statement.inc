@@ -119,8 +119,11 @@ $total = 0;
 $total_exc = 0;
 $closing = 0;
 $closing_exc = 0;
+$list_bank = [];
 
 while ($r = $result->fetchObject()) {
+    // track bank-linked accounts so the cash block below cannot double count them
+    $list_bank[] = $r->aid;
 
     $i++;
     $histo = $journal->history(serialize(array(
@@ -181,7 +184,7 @@ $total = 0;
 $total_exc = 0;
 $closing = 0;
 $closing_exc = 0;
-$list = [];
+$list = $list_bank;
 foreach ($Currencies as $currency => $name) {
 
     $aid = $settings->get('cash_account', $currency);
