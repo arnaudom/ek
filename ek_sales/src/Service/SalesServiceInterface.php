@@ -87,4 +87,21 @@ interface SalesServiceInterface {
   */
   public function uploadSalesDocument($abid, $file_data, $folder = null, $comment = null);
 
+/**
+ * Get per-user task alerts keyed by document serial.
+ *
+ * @param string $source
+ *   The document source: 'purchase' or 'invoice'.
+ * @param array $serials
+ *   The document serials to check (e.g. the rows of the current page).
+ * @param int $uid
+ *   The task owner user id. Defaults to the current user when 0.
+ *
+ * @return array
+ *   Map of serial => ['open' => int, 'expired' => int]. A serial key is only
+ *   present when the user has at least one task on that document. Completed
+ *   tasks do not contribute to either counter.
+ */
+  public function getTaskAlertsBySerial(string $source, array $serials, int $uid = 0);
+
 }

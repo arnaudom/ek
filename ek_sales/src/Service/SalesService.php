@@ -753,4 +753,55 @@ class SalesService implements SalesServiceInterface {
             return ['success' => FALSE, 'errors' => ['file' => 'Internal error uploading document']];
         }
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTaskAlertsBySerial(string $source, array $serials, int $uid = 0) {
+        $alerts = [];
+
+        if (empty($serials)) {
+            return $alerts;
+        }
+
+        $tables = [
+            'purchase' => 'ek_sales_purchase_tasks',
+            'invoice' => 'ek_sales_invoice_tasks',
+        ];
+
+        if (!isset($tables[$source])) {
+            return $alerts;
+        }
+
+        if ($uid === 0) {
+            $uid = (int) \Drupal::currentUser()->id();
+        }
+
+        $now = time();
+        $query = $this->extdb->select($tables[$source], 't');
+        $query->fields('t', ['serial', 'end', 'completion_rate']);
+        $query->condition('t.uid', $uid, '=');
+        $query->condition('t.serial', $serials, 'IN');
+        $data = $query->execute();
+
+        while ($row = $data->fetchObject()) {
+            $serial = $row->serial;
+            if (!isset($alerts[$serial])) {
+                $alerts[$serial] = ['open' => 0, 'expired' => 0];
+            }
+
+            // Completed tasks do not raise an alert.
+            if ((int) $row->completion_rate >= 100) {
+                continue;
+            }
+
+            $alerts[$serial]['open']++;
+            $end = (int) $row->end;
+            if ($end > 0 && $end < $now) {
+                $alerts[$serial]['expired']++;
+            }
+        }
+
+        return $alerts;
+    }
 }

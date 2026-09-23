@@ -259,7 +259,17 @@ class InvoicesController extends ControllerBase {
                 ->fetchAllKeyed();
         $options = [];
 
-        while ($r = $data->fetchObject()) {
+        // Per-user task alerts for the documents in this page (single query).
+        $rows = $data->fetchAll();
+        $serials = [];
+        foreach ($rows as $pageRow) {
+            $serials[] = $pageRow->serial;
+        }
+        $taskAlerts = !empty($serials)
+            ? \Drupal::service('sales.service')->getTaskAlertsBySerial('invoice', $serials, (int) \Drupal::currentUser()->id())
+            : [];
+
+        foreach ($rows as $r) {
             $settings = new SalesSettings($r->head);
             $client_name = '';
             $client = '';
@@ -294,6 +304,17 @@ class InvoicesController extends ControllerBase {
             $number = "<a class='" . $doctype . "' title='" . $this->t('view') . "' href='"
                     . Url::fromRoute('ek_sales.invoices.print_html', ['id' => $r->id], [])->toString() . "'>"
                     . $r->serial . "</a>";
+
+            // Per-user task indicator: red = expired, blue = pending.
+            if (isset($taskAlerts[$r->serial]) && $taskAlerts[$r->serial]['expired'] > 0) {
+                $number .= " <i class='fa fa-flag task-flag task-flag--expired' title='"
+                    . $this->t('@c expired task(s)', ['@c' => $taskAlerts[$r->serial]['expired']])
+                    . "' aria-hidden='true'></i>";
+            } elseif (isset($taskAlerts[$r->serial]) && $taskAlerts[$r->serial]['open'] > 0) {
+                $number .= " <i class='fa fa-flag task-flag task-flag--pending' title='"
+                    . $this->t('@c pending task(s)', ['@c' => $taskAlerts[$r->serial]['open']])
+                    . "' aria-hidden='true'></i>";
+            }
 
             if ($r->pcode <> 'n/a') {
                 if ($this->moduleHandler->moduleExists('ek_projects')) { 
@@ -457,7 +478,7 @@ class InvoicesController extends ControllerBase {
             $destination = ['destination' => '/invoices/list'];
             $link = Url::fromRoute('ek_sales.invoices.task', ['id' => $r->id], ['query' => $destination]);
             $links['task'] = [
-                'title' => $this->t('Edit task'),
+                'title' => isset($taskAlerts[$r->serial]) ? $this->t('Edit task') : $this->t('New task'),
                 'url' => $link,
                 'attributes' => [
                     'class' => ['use-ajax'],
@@ -516,6 +537,10 @@ class InvoicesController extends ControllerBase {
             '#rows' => $options,
             '#attributes' => ['id' => 'invoices_table'],
             '#empty' => $this->t('No invoice available'),
+            '#cache' => [
+                'tags' => ['sales_task'],
+                'contexts' => ['user'],
+            ],
             '#footer' => [
                 [
                 'data' => [
@@ -1258,7 +1283,7 @@ class InvoicesController extends ControllerBase {
         $access = AccessCheck::GetCompanyByUser();
         $query = Database::getConnection('external_db', 'external_db')
                 ->select('ek_sales_invoice', 'i');
-        $query->leftJoin('ek_sales_invoice_tasks', 't', 'i.serial=t.serial');
+        $query->leftJoin('ek_sales_invoice_tasks', 't', 'i.serial=t.serial AND t.uid=' . (int) \Drupal::currentUser()->id());
         $or1 = $query->orConditionGroup();
         $or1->condition('head', $access, 'IN');
         $or1->condition('allocation', $access, 'IN');

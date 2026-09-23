@@ -1,12 +1,11 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\ek\Controller\SalesController.
- */
-
 namespace Drupal\ek_sales\Controller;
 
+use Drupal\Core\Cache\Cache;
+use Drupal\file\Entity\File;
+use Drupal\ek_admin\Access\AccessCheck;
+use Drupal\ek_address_book\AddressBookData;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
@@ -30,332 +29,346 @@ use Drupal\ek_finance\FinanceSettings;
  * Controller routines for ek module routes.
  */
 class SalesController extends ControllerBase {
-    /* The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
+  /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandler
+   */
 
-    protected $moduleHandler;
 
-    /**
-     * The database service.
-     *
-     * @var \Drupal\Core\Database\Connection
-     */
-    protected $database;
+  protected $moduleHandler;
 
-    /**
-     * The form builder service.
-     *
-     * @var \Drupal\Core\Form\FormBuilderInterface
-     */
-    protected $formBuilder;
+  /**
+   * The database service.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $database;
 
-    //protected $uuidService;
+  /**
+   * The form builder service.
+   *
+   * @var \Drupal\Core\Form\FormBuilderInterface
+   */
+  protected $formBuilder;
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function create(ContainerInterface $container) {
-        return new static(
-                $container->get('database'),
-                $container->get('form_builder'),
-                $container->get('module_handler'),
-                $container->get('config.factory')
-        );
+  // Protected $uuidService;.
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+              $container->get('database'),
+              $container->get('form_builder'),
+              $container->get('module_handler'),
+              $container->get('config.factory')
+      );
+  }
+
+  /**
+   * Constructs a  object.
+   *
+   * @param \Drupal\Core\Database\Connection $database
+   *   A database connection.
+   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+   *   The form builder service.
+   */
+  public function __construct(
+    Connection $database,
+    FormBuilderInterface $form_builder,
+    ModuleHandler $module_handler,
+    ConfigFactoryInterface $config_factory,
+  ) {
+    $this->database = $database;
+    $this->formBuilder = $form_builder;
+    $this->moduleHandler = $module_handler;
+    $this->configFactory = $config_factory;
+  }
+
+  /**
+   * Return main.
+   */
+  public function ManageSales(Request $request) {
+    return ['#markup' => ''];
+  }
+
+  /**
+   * @file
+   * AgingAnalytics() method to add to SalesController.
+   * The page renders:
+   *   1. Company filter form
+   *   2. Four KPI summary cards (markup)
+   *   3. Three named chart <div> placeholders
+   *   4. A detail table of the raw rows grouped by period bucket
+   */
+
+  /**
+   *
+   */
+  public function agingAnalytics(): array {
+
+    $build = [];
+
+    // -----------------------------------------------------------------------
+    // 1. Company filter
+    // -----------------------------------------------------------------------
+    $build['filter_coid'] = $this->formBuilder->getForm(
+          'Drupal\ek_admin\Form\FilterCompany'
+      );
+
+    if (!isset($_SESSION['coidfilter']['coid'])) {
+      return $build;
     }
 
-    /**
-     * Constructs a  object.
-     *
-     * @param \Drupal\Core\Database\Connection $database
-     *   A database connection.
-     * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
-     *   The form builder service.
-     */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler,
-    ConfigFactoryInterface $config_factory) {
-        $this->database = $database;
-        $this->formBuilder = $form_builder;
-        $this->moduleHandler = $module_handler;
-        $this->configFactory = $config_factory;
+    $coid = $_SESSION['coidfilter']['coid'];
+
+    // -----------------------------------------------------------------------
+    // 2. Base currency
+    // -----------------------------------------------------------------------
+    $baseCurrency = '';
+    if ($this->moduleHandler->moduleExists('ek_finance')) {
+      $settings = new FinanceSettings();
+      $baseCurrency = $settings->get('baseCurrency');
     }
 
-    /**
-     * Return main
-     *
-     */
-    public function ManageSales(Request $request) {
-        return array('#markup' => '');
-    }
+    // -----------------------------------------------------------------------
+    // 3. Reference data (companies + address book)
+    // -----------------------------------------------------------------------
+    $db = Database::getConnection('external_db', 'external_db');
 
-    /**
-     * @file
-     * agingAnalytics() method to add to SalesController.
-     * The page renders:
-     *   1. Company filter form
-     *   2. Four KPI summary cards (markup)
-     *   3. Three named chart <div> placeholders
-     *   4. A detail table of the raw rows grouped by period bucket
-     */
+    $companies = $db->query("SELECT id, name FROM {ek_company}")
+      ->fetchAllKeyed();
 
-    public function agingAnalytics(): array {
-    
-        $build = [];
-    
-        // -----------------------------------------------------------------------
-        // 1. Company filter
-        // -----------------------------------------------------------------------
-        $build['filter_coid'] = $this->formBuilder->getForm(
-            'Drupal\ek_admin\Form\FilterCompany'
-        );
-    
-        if (!isset($_SESSION['coidfilter']['coid'])) {
-            return $build;
+    $abook = $db->query("SELECT id, name FROM {ek_address_book}")
+      ->fetchAllKeyed();
+
+    // -----------------------------------------------------------------------
+    // 4. Bucket definitions (order matters: oldest overdue → furthest future)
+    // -----------------------------------------------------------------------
+    $buckets = [
+      'a' => ['label' => $this->t('More than 120 days overdue'), 'min' => 121, 'max' => PHP_INT_MAX, 'type' => 'overdue'],
+      'b' => ['label' => $this->t('90 – 120 days overdue'), 'min' => 91, 'max' => 120, 'type' => 'overdue'],
+      'c' => ['label' => $this->t('60 – 90 days overdue'), 'min' => 61, 'max' => 90, 'type' => 'overdue'],
+      'd' => ['label' => $this->t('30 – 60 days overdue'), 'min' => 31, 'max' => 60, 'type' => 'overdue'],
+      'e' => ['label' => $this->t('0 – 30 days overdue'), 'min' => 0, 'max' => 30, 'type' => 'soon'],
+      'f' => ['label' => $this->t('Due within 30 days'), 'min' => -30, 'max' => -1, 'type' => 'soon'],
+      'g' => ['label' => $this->t('Due in 30 – 60 days'), 'min' => -60, 'max' => -31, 'type' => 'future'],
+      'h' => ['label' => $this->t('Due in 60 – 90 days'), 'min' => -90, 'max' => -61, 'type' => 'future'],
+      'i' => ['label' => $this->t('Due in more than 90 days'), 'min' => PHP_INT_MIN, 'max' => -91, 'type' => 'future'],
+    ];
+
+    // -----------------------------------------------------------------------
+    // 5. Helper: query one table and return bucketed results
+    // -----------------------------------------------------------------------
+    $processTable = function (
+      string $table,
+      // 'amountpaid' | 'amountreceived'
+      string $amountPaidField,
+      string $detailsTable,
+      string $printRoute,
+    ) use ($db, $coid, $abook, $companies, $buckets): array {
+
+      // Last char of table name as alias.
+      $alias = substr($table, -1);
+
+      $fields = [
+        'id', 'head', 'allocation', 'serial', 'client', 'status',
+        'title', 'currency', 'date', 'due',
+        'amount', $amountPaidField, 'amountbase', 'balancebase',
+        'pcode', 'taxvalue',
+      ];
+
+      $query = $db->select($table, $alias);
+      $or    = $query->orConditionGroup()
+        ->condition("{$alias}.status", '0', '=')
+        ->condition("{$alias}.status", '2', '=');
+
+      $rows = $query
+        ->fields($alias, $fields)
+        ->condition($or)
+        ->condition("{$alias}.head", $coid, '=')
+        ->orderBy('date', 'ASC')
+        ->execute()
+        ->fetchAll();
+
+      $today    = date('Y-m-d');
+      $bucketed = array_fill_keys(array_keys($buckets), []);
+
+      foreach ($rows as $r) {
+        $due = date(
+              'Y-m-d',
+              strtotime(date('Y-m-d', strtotime($r->date)) . '+' . $r->due . ' days')
+          );
+        $age = (int) round(
+              (strtotime($today) - strtotime($due)) / 86400
+          );
+
+        // Determine remaining value.
+        if ($r->status == 2) {
+          $remaining     = $r->amount - $r->{$amountPaidField};
+          $baseRemaining = $r->balancebase;
+          $statusLabel   = $this->t('Partially paid');
         }
-    
-        $coid = $_SESSION['coidfilter']['coid'];
-    
-        // -----------------------------------------------------------------------
-        // 2. Base currency
-        // -----------------------------------------------------------------------
-        $baseCurrency = '';
-        if ($this->moduleHandler->moduleExists('ek_finance')) {
-            $settings = new FinanceSettings();
-            $baseCurrency = $settings->get('baseCurrency');
+        else {
+          $remaining     = $r->amount;
+          $baseRemaining = $r->amountbase;
+          $statusLabel   = '';
         }
-    
-        // -----------------------------------------------------------------------
-        // 3. Reference data (companies + address book)
-        // -----------------------------------------------------------------------
-        $db = Database::getConnection('external_db', 'external_db');
-    
-        $companies = $db->query("SELECT id, name FROM {ek_company}")
-            ->fetchAllKeyed();
-    
-        $abook = $db->query("SELECT id, name FROM {ek_address_book}")
-            ->fetchAllKeyed();
-    
-        // -----------------------------------------------------------------------
-        // 4. Bucket definitions (order matters: oldest overdue → furthest future)
-        // -----------------------------------------------------------------------
-        $buckets = [
-            'a' => ['label' => $this->t('More than 120 days overdue'),  'min' => 121,  'max' => PHP_INT_MAX, 'type' => 'overdue'],
-            'b' => ['label' => $this->t('90 – 120 days overdue'),       'min' => 91,   'max' => 120,        'type' => 'overdue'],
-            'c' => ['label' => $this->t('60 – 90 days overdue'),        'min' => 61,   'max' => 90,         'type' => 'overdue'],
-            'd' => ['label' => $this->t('30 – 60 days overdue'),        'min' => 31,   'max' => 60,         'type' => 'overdue'],
-            'e' => ['label' => $this->t('0 – 30 days overdue'),         'min' => 0,    'max' => 30,         'type' => 'soon'],
-            'f' => ['label' => $this->t('Due within 30 days'),          'min' => -30,  'max' => -1,         'type' => 'soon'],
-            'g' => ['label' => $this->t('Due in 30 – 60 days'),         'min' => -60,  'max' => -31,        'type' => 'future'],
-            'h' => ['label' => $this->t('Due in 60 – 90 days'),         'min' => -90,  'max' => -61,        'type' => 'future'],
-            'i' => ['label' => $this->t('Due in more than 90 days'),    'min' => PHP_INT_MIN, 'max' => -91, 'type' => 'future'],
-        ];
-    
-        // -----------------------------------------------------------------------
-        // 5. Helper: query one table and return bucketed results
-        // -----------------------------------------------------------------------
-        $processTable = function (
-            string $table,
-            string $amountPaidField,   // 'amountpaid' | 'amountreceived'
-            string $detailsTable,
-            string $printRoute
-        ) use ($db, $coid, $abook, $companies, $buckets): array {
-    
-            $alias = substr($table, -1); // last char of table name as alias
-    
-            $fields = [
-                'id', 'head', 'allocation', 'serial', 'client', 'status',
-                'title', 'currency', 'date', 'due',
-                'amount', $amountPaidField, 'amountbase', 'balancebase',
-                'pcode', 'taxvalue',
-            ];
-    
-            $query = $db->select($table, $alias);
-            $or    = $query->orConditionGroup()
-                ->condition("{$alias}.status", '0', '=')
-                ->condition("{$alias}.status", '2', '=');
-    
-            $rows = $query
-                ->fields($alias, $fields)
-                ->condition($or)
-                ->condition("{$alias}.head", $coid, '=')
-                ->orderBy('date', 'ASC')
-                ->execute()
-                ->fetchAll();
-    
-            $today   = date('Y-m-d');
-            $bucketed = array_fill_keys(array_keys($buckets), []);
-    
-            foreach ($rows as $r) {
-                $due = date(
-                    'Y-m-d',
-                    strtotime(date('Y-m-d', strtotime($r->date)) . '+' . $r->due . ' days')
-                );
-                $age = (int) round(
-                    (strtotime($today) - strtotime($due)) / 86400
-                );
-    
-                // Determine remaining value
-                if ($r->status == 2) {
-                    $remaining     = $r->amount - $r->{$amountPaidField};
-                    $baseRemaining = $r->balancebase;
-                    $statusLabel   = $this->t('Partially paid');
-                } else {
-                    $remaining     = $r->amount;
-                    $baseRemaining = $r->amountbase;
-                    $statusLabel   = '';
-                }
-    
-                // Tax
-                $tax = 0;
-                if ($r->taxvalue != 0) {
-                    $taxable = $db->query(
-                        "SELECT SUM(total) FROM {{$detailsTable}} WHERE serial = :s AND opt = :o",
-                        [':s' => $r->serial, ':o' => 1]
-                    )->fetchField();
-                    $tax = (float) $taxable * $r->taxvalue / 100;
-                }
-    
-                // Client link
-                $clientLink = \Drupal\ek_address_book\AddressBookData::geturl($r->client);
-                $reference  = $clientLink;
-                if ($r->pcode !== 'n/a' && $this->moduleHandler->moduleExists('ek_projects')) {
-                    $reference .= '<br/>' . \Drupal::service('project.service')
-                        ->geturl($r->pcode, null, null, true);
-                }
-    
-                $numberLink = "<a href='"
+
+        // Tax.
+        $tax = 0;
+        if ($r->taxvalue != 0) {
+          $taxable = $db->query(
+          "SELECT SUM(total) FROM {{$detailsTable}} WHERE serial = :s AND opt = :o",
+          [':s' => $r->serial, ':o' => 1]
+            )->fetchField();
+          $tax = (float) $taxable * $r->taxvalue / 100;
+        }
+
+        // Client link.
+        $clientLink = AddressBookData::geturl($r->client);
+        $reference  = $clientLink;
+        if ($r->pcode !== 'n/a' && $this->moduleHandler->moduleExists('ek_projects')) {
+          $reference .= '<br/>' . \Drupal::service('project.service')
+            ->geturl($r->pcode, NULL, NULL, TRUE);
+        }
+
+        $numberLink = "<a href='"
                     . Url::fromRoute($printRoute, ['id' => $r->id])->toString()
                     . "'>" . $r->serial . "</a>";
-    
-                // Build row data
-                $rowData = [
-                    'id'          => $r->id,
-                    'serial'      => $r->serial,
-                    'numberLink'  => $numberLink,
-                    'client'      => $abook[$r->client] ?? '',
-                    'reference'   => $reference,
-                    'currency'    => $r->currency,
-                    'remaining'   => $remaining,
-                    'baseValue'   => $baseRemaining,
-                    'tax'         => $tax,
-                    'status'      => $statusLabel,
-                    'age'         => $age,
-                    'due'         => $due,
-                ];
-    
-                // Assign to bucket
-                foreach ($buckets as $key => $bucket) {
-                    if ($age >= $bucket['min'] && $age <= $bucket['max']) {
-                        $bucketed[$key][] = $rowData;
-                        break;
-                    }
-                }
-            }
-    
-            return $bucketed;
-        };
-    
-        // -----------------------------------------------------------------------
-        // 6. Run both queries
-        // -----------------------------------------------------------------------
-        $invoiceBuckets  = $processTable(
-            'ek_sales_invoice',
-            'amountreceived',
-            'ek_sales_invoice_details',
-            'ek_sales.invoices.print_html'
-        );
-    
-        $purchaseBuckets = $processTable(
-            'ek_sales_purchase',
-            'amountpaid',
-            'ek_sales_purchase_details',
-            'ek_sales.purchases.print_html'
-        );
-    
-        // -----------------------------------------------------------------------
-        // 7. Aggregate totals per bucket for KPI cards and chart data
-        // -----------------------------------------------------------------------
-        $invTotals = $purTotals = [];
-        foreach (array_keys($buckets) as $key) {
-            $invTotals[$key] = array_sum(array_column($invoiceBuckets[$key],  'baseValue'));
-            $purTotals[$key] = array_sum(array_column($purchaseBuckets[$key], 'baseValue'));
-        }
-    
-        $overdueKeys = ['a', 'b', 'c', 'd', 'e'];
-        $soonKeys    = ['f'];
-        $futureKeys  = ['g', 'h', 'i'];
-    
-        $kpi = [
-            'invOverdue'  => array_sum(array_intersect_key($invTotals, array_flip($overdueKeys))),
-            'invSoon'     => array_sum(array_intersect_key($invTotals, array_flip($soonKeys))),
-            'invFuture'   => array_sum(array_intersect_key($invTotals, array_flip($futureKeys))),
-            'invTotal'    => array_sum($invTotals),
-            'purOverdue'  => array_sum(array_intersect_key($purTotals, array_flip($overdueKeys))),
-            'purSoon'     => array_sum(array_intersect_key($purTotals, array_flip($soonKeys))),
-            'purFuture'   => array_sum(array_intersect_key($purTotals, array_flip($futureKeys))),
-            'purTotal'    => array_sum($purTotals),
+        $isProforma = $table === 'ek_sales_invoice'
+                    && stripos((string) $r->title, 'proforma') !== FALSE;
+
+        // Build row data.
+        $rowData = [
+          'id'          => $r->id,
+          'serial'      => $r->serial,
+          'numberLink'  => $numberLink,
+          'isProforma'  => $isProforma,
+          'client'      => $abook[$r->client] ?? '',
+          'reference'   => $reference,
+          'currency'    => $r->currency,
+          'remaining'   => $remaining,
+          'baseValue'   => $baseRemaining,
+          'tax'         => $tax,
+          'status'      => $statusLabel,
+          'age'         => $age,
+          'due'         => $due,
         ];
-        $kpi['netPosition'] = $kpi['invTotal'] - $kpi['purTotal'];
-    
-        // -----------------------------------------------------------------------
-        // 8. Build Morris chart data arrays
-        //    Bar chart: one bar per bucket, grouped inv vs pur
-        //    Donut charts: overdue | soon | future split for inv and pur
-        // -----------------------------------------------------------------------
-        $barData = [];
-        foreach (array_keys($buckets) as $key) {
-            $barData[] = [
-                'period'      => (string) $buckets[$key]['label'],
-                'receivable'  => round($invTotals[$key], 2),
-                'payable'     => round($purTotals[$key], 2),
-            ];
+
+        // Assign to bucket.
+        foreach ($buckets as $key => $bucket) {
+          if ($age >= $bucket['min'] && $age <= $bucket['max']) {
+            $bucketed[$key][] = $rowData;
+            break;
+          }
         }
-    
-        // Donut — invoices: overdue / soon / future
-        $invDonut = [
-            ['label' => (string) $this->t('Overdue'),      'value' => round($kpi['invOverdue'], 2)],
-            ['label' => (string) $this->t('Due soon'),     'value' => round($kpi['invSoon'],    2)],
-            ['label' => (string) $this->t('Future'),       'value' => round($kpi['invFuture'],  2)],
-        ];
-    
-        // Donut — purchases
-        $purDonut = [
-            ['label' => (string) $this->t('Overdue'),      'value' => round($kpi['purOverdue'], 2)],
-            ['label' => (string) $this->t('Due soon'),     'value' => round($kpi['purSoon'],    2)],
-            ['label' => (string) $this->t('Future'),       'value' => round($kpi['purFuture'],  2)],
-        ];
-    
-        // -----------------------------------------------------------------------
-        // 9. Build detail table rows (for the collapsible per-bucket sections)
-        //    We output both inv and pur rows so JS can toggle tabs.
-        // -----------------------------------------------------------------------
-        $tableRows = [];
-        foreach (array_keys($buckets) as $key) {
-            $tableRows[$key] = [
-                'label'     => (string) $buckets[$key]['label'],
-                'type'      => $buckets[$key]['type'],
-                'invoices'  => $invoiceBuckets[$key],
-                'purchases' => $purchaseBuckets[$key],
-            ];
-        }
-    
-        // -----------------------------------------------------------------------
-        // 10. KPI summary cards markup
-        // -----------------------------------------------------------------------
-        $fmt = fn(float $v): string => $baseCurrency . ' ' . number_format($v, 2);
-        $netClass = $kpi['netPosition'] >= 0 ? 'aging-kpi--positive' : 'aging-kpi--negative';
-    
-        $kpiMarkup = '<div class="aging-kpi-grid">'
+      }
+
+      return $bucketed;
+    };
+
+    // -----------------------------------------------------------------------
+    // 6. Run both queries
+    // -----------------------------------------------------------------------
+    $invoiceBuckets = $processTable(
+          'ek_sales_invoice',
+          'amountreceived',
+          'ek_sales_invoice_details',
+          'ek_sales.invoices.print_html'
+      );
+
+    $purchaseBuckets = $processTable(
+          'ek_sales_purchase',
+          'amountpaid',
+          'ek_sales_purchase_details',
+          'ek_sales.purchases.print_html'
+      );
+
+    // -----------------------------------------------------------------------
+    // 7. Aggregate totals per bucket for KPI cards and chart data
+    // -----------------------------------------------------------------------
+    $invTotals = $purTotals = [];
+    foreach (array_keys($buckets) as $key) {
+      $invTotals[$key] = array_sum(array_column($invoiceBuckets[$key], 'baseValue'));
+      $purTotals[$key] = array_sum(array_column($purchaseBuckets[$key], 'baseValue'));
+    }
+
+    $overdueKeys = ['a', 'b', 'c', 'd', 'e'];
+    $soonKeys    = ['f'];
+    $futureKeys  = ['g', 'h', 'i'];
+
+    $kpi = [
+      'invOverdue'  => array_sum(array_intersect_key($invTotals, array_flip($overdueKeys))),
+      'invSoon'     => array_sum(array_intersect_key($invTotals, array_flip($soonKeys))),
+      'invFuture'   => array_sum(array_intersect_key($invTotals, array_flip($futureKeys))),
+      'invTotal'    => array_sum($invTotals),
+      'purOverdue'  => array_sum(array_intersect_key($purTotals, array_flip($overdueKeys))),
+      'purSoon'     => array_sum(array_intersect_key($purTotals, array_flip($soonKeys))),
+      'purFuture'   => array_sum(array_intersect_key($purTotals, array_flip($futureKeys))),
+      'purTotal'    => array_sum($purTotals),
+    ];
+    $kpi['netPosition'] = $kpi['invTotal'] - $kpi['purTotal'];
+
+    // -----------------------------------------------------------------------
+    // 8. Build Morris chart data arrays
+    //    Bar chart: one bar per bucket, grouped inv vs pur
+    //    Donut charts: overdue | soon | future split for inv and pur
+    // -----------------------------------------------------------------------
+    $barData = [];
+    foreach (array_keys($buckets) as $key) {
+      $barData[] = [
+        'period'      => (string) $buckets[$key]['label'],
+        'receivable'  => round($invTotals[$key], 2),
+        'payable'     => round($purTotals[$key], 2),
+      ];
+    }
+
+    // Donut — invoices: overdue / soon / future.
+    $invDonut = [
+          ['label' => (string) $this->t('Overdue'), 'value' => round($kpi['invOverdue'], 2)],
+          ['label' => (string) $this->t('Due soon'), 'value' => round($kpi['invSoon'], 2)],
+          ['label' => (string) $this->t('Future'), 'value' => round($kpi['invFuture'], 2)],
+    ];
+
+    // Donut — purchases.
+    $purDonut = [
+          ['label' => (string) $this->t('Overdue'), 'value' => round($kpi['purOverdue'], 2)],
+          ['label' => (string) $this->t('Due soon'), 'value' => round($kpi['purSoon'], 2)],
+          ['label' => (string) $this->t('Future'), 'value' => round($kpi['purFuture'], 2)],
+    ];
+
+    // -----------------------------------------------------------------------
+    // 9. Build detail table rows (for the collapsible per-bucket sections)
+    //    We output both inv and pur rows so JS can toggle tabs.
+    // -----------------------------------------------------------------------
+    $tableRows = [];
+    foreach (array_keys($buckets) as $key) {
+      $tableRows[$key] = [
+        'label'     => (string) $buckets[$key]['label'],
+        'type'      => $buckets[$key]['type'],
+        'invoices'  => $invoiceBuckets[$key],
+        'purchases' => $purchaseBuckets[$key],
+      ];
+    }
+
+    // -----------------------------------------------------------------------
+    // 10. KPI summary cards markup
+    // -----------------------------------------------------------------------
+    $fmt = fn(float $v): string => $baseCurrency . ' ' . number_format($v, 2);
+    $netClass = $kpi['netPosition'] >= 0 ? 'aging-kpi--positive' : 'aging-kpi--negative';
+
+    $kpiMarkup = '<div class="aging-kpi-grid">'
             . '<div class="aging-kpi aging-kpi--overdue"><span class="aging-kpi__label">' . $this->t('Total overdue (receivable)') . '</span><span class="aging-kpi__value">' . $fmt($kpi['invOverdue']) . '</span></div>'
             . '<div class="aging-kpi aging-kpi--overdue aging-kpi--payable"><span class="aging-kpi__label">' . $this->t('Total overdue (payable)') . '</span><span class="aging-kpi__value">' . $fmt($kpi['purOverdue']) . '</span></div>'
             . '<div class="aging-kpi aging-kpi--soon"><span class="aging-kpi__label">' . $this->t('Due within 30 days (in)') . '</span><span class="aging-kpi__value">' . $fmt($kpi['invSoon']) . '</span></div>'
             . '<div class="aging-kpi aging-kpi--soon aging-kpi--payable"><span class="aging-kpi__label">' . $this->t('Due within 30 days (out)') . '</span><span class="aging-kpi__value">' . $fmt($kpi['purSoon']) . '</span></div>'
             . '<div class="aging-kpi ' . $netClass . ' aging-kpi--net"><span class="aging-kpi__label">' . $this->t('Net cash position') . '</span><span class="aging-kpi__value">' . $fmt($kpi['netPosition']) . '</span></div>'
             . '</div>';
-    
-        // Chart container markup
-        $chartMarkup = '<div class="aging-charts-wrap">'
+
+    // Chart container markup.
+    $chartMarkup = '<div class="aging-charts-wrap">'
             . '<div class="aging-chart-section">'
             . '  <h3>' . $this->t('Receivable vs payable by period') . '</h3>'
             . '  <div id="aging-bar-chart" style="height:280px;"></div>'
@@ -365,742 +378,760 @@ class SalesController extends ControllerBase {
             . '  <div class="aging-donut-wrap"><h3>' . $this->t('Purchases breakdown') . '</h3><div id="aging-donut-pur" style="height:220px;width:100%;"></div></div>'
             . '</div>'
             . '</div>';
-    
-        // Detail table markup (bucket headers + tab-toggle; JS fills in rows)
-        $detailMarkup  = '<div class="aging-detail">';
-        $detailMarkup .= '<div class="aging-detail__tabs">'
+
+    // Detail table markup (bucket headers + tab-toggle; JS fills in rows)
+    $detailMarkup  = '<div class="aging-detail">';
+    $detailMarkup .= '<div class="aging-detail__tabs">'
             . '<button class="aging-tab aging-tab--active" data-target="invoices">' . $this->t('Invoices') . '</button>'
             . '<button class="aging-tab" data-target="purchases">' . $this->t('Purchases') . '</button>'
             . '</div>';
-        $detailMarkup .= '<div id="aging-detail-table-wrap"></div>';
-        $detailMarkup .= '</div>';
-    
-        // -----------------------------------------------------------------------
-        // 11. Assemble $build
-        // -----------------------------------------------------------------------
-        $build['aging_kpi'] = [
-            '#type'     => 'inline_template',
-            '#template' => '{{ content|raw }}',
-            '#context'  => ['content' => $kpiMarkup],
-        ];
-    
-        $build['aging_charts'] = [
-            '#type'     => 'inline_template',
-            '#template' => '{{ content|raw }}',
-            '#context'  => ['content' => $chartMarkup],
-        ];
-    
-        $build['aging_detail'] = [
-            '#type'     => 'inline_template',
-            '#template' => '{{ content|raw }}',
-            '#context'  => ['content' => $detailMarkup],
-        ];
-    
-        // -----------------------------------------------------------------------
-        // 12. drupalSettings + libraries
-        // -----------------------------------------------------------------------
-        $build['#attached'] = [
-            'drupalSettings' => [
-                'agingAnalytics' => [
-                    'baseCurrency' => $baseCurrency,
-                    'barData'      => $barData,
-                    'invDonut'     => $invDonut,
-                    'purDonut'     => $purDonut,
-                    'tableRows'    => array_values($tableRows),
-                    // Pass KPI values for any JS-side formatting
-                    'kpi'          => array_map(fn($v) => round($v, 2), $kpi),
-                ],
-            ],
-            'library' => [
-                'ek_sales/ek_sales_css',
-                'ek_admin/ek_admin_css',
-                'ek_admin/ek_admin_charts',        // Morris + Raphael
-                'ek_sales/ek_sales_aging_charts',  // new JS file (see .js file)
-            ],
-        ];
-    
-        $build['#cache'] = [
-            'tags'     => ['sales_data'],
-            'contexts' => ['session'],   // session holds coidfilter
-        ];
-    
-        return $build;
-    }
+    $detailMarkup .= '<div id="aging-detail-table-wrap"></div>';
+    $detailMarkup .= '</div>';
 
-    /**
-     * Return sales data page
-     * data by address book entry
-     * @param abid
-     *  id of address book
-     */
+    // -----------------------------------------------------------------------
+    // 11. Assemble $build
+    // -----------------------------------------------------------------------
+    $build['aging_kpi'] = [
+      '#type'     => 'inline_template',
+      '#template' => '{{ content|raw }}',
+      '#context'  => ['content' => $kpiMarkup],
+    ];
 
-    public function DataSales(Request $request, $abid) {
-        $theme = 'ek_sales_data';
-        $items = array();
+    $build['aging_charts'] = [
+      '#type'     => 'inline_template',
+      '#template' => '{{ content|raw }}',
+      '#context'  => ['content' => $chartMarkup],
+    ];
 
-        $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_address_book', 'book');
-        $query->fields('book', ['name', 'type']);
-        $query->leftJoin('ek_address_book_comment', 'c', 'book.id = c.abid');
-        $query->fields('c', ['comment']);
-        $query->condition('id', $abid);
-        $ab = $query->execute()->fetchObject();
+    $build['aging_detail'] = [
+      '#type'     => 'inline_template',
+      '#template' => '{{ content|raw }}',
+      '#context'  => ['content' => $detailMarkup],
+    ];
 
-        if ($ab) {
-            $items['data'] = 1;
-            $items['abidname'] = $ab->name;
+    // -----------------------------------------------------------------------
+    // 12. drupalSettings + libraries
+    // -----------------------------------------------------------------------
+    $build['#attached'] = [
+      'drupalSettings' => [
+        'agingAnalytics' => [
+          'baseCurrency' => $baseCurrency,
+          'barData'      => $barData,
+          'invDonut'     => $invDonut,
+          'purDonut'     => $purDonut,
+          'tableRows'    => array_values($tableRows),
+                  // Pass KPI values for any JS-side formatting.
+          'kpi'          => array_map(fn($v) => round($v, 2), $kpi),
+        ],
+      ],
+      'library' => [
+        'ek_sales/ek_sales_css',
+        'ek_admin/ek_admin_css',
+      // Morris + Raphael.
+        'ek_admin/ek_admin_charts',
+      // New JS file (see .js file)
+        'ek_sales/ek_sales_aging_charts',
+      ],
+    ];
 
-            $items['abidlink'] = ['#markup' => \Drupal\ek_address_book\AddressBookData::geturl($abid)];
-            //upload form for documents
-            $items['form'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\UploadForm', $abid);
+    $build['#cache'] = [
+      'tags'     => ['sales_data'],
+    // Session holds coidfilter.
+      'contexts' => ['session'],
+    ];
 
-            // comments
-            $items['comment'] = html_entity_decode($ab->comment, ENT_QUOTES, "utf-8");
-            $param_edit = 'comment|' . $abid . '|address_book|50%';
-            $items['url_comment'] = Url::fromRoute('ek_sales_modal', ['param' => $param_edit])->toString();
-            $items['edit_comment'] = $this->t('<a href="@url" class="@c"  >[ edit ]</a>', array('@url' => $items['url_comment'], '@c' => 'use-ajax red '));
+    return $build;
+  }
 
+  /**
+   * Return sales data page
+   * data by address book entry
+   *
+   * @param abid
+   *   id of address book
+   */
+  public function DataSales(Request $request, $abid) {
+    $theme = 'ek_sales_data';
+    $items = [];
 
-            // projects linked
-            if ($this->moduleHandler->moduleExists('ek_projects')) {
-                $query = "SELECT p.id,p.status,date,pcode,pname,level,priority,cid,last_modified,c.name
+    $query = Database::getConnection('external_db', 'external_db')
+      ->select('ek_address_book', 'book');
+    $query->fields('book', ['name', 'type']);
+    $query->leftJoin('ek_address_book_comment', 'c', 'book.id = c.abid');
+    $query->fields('c', ['comment']);
+    $query->condition('id', $abid);
+    $ab = $query->execute()->fetchObject();
+
+    if ($ab) {
+      $items['data'] = 1;
+      $items['abidname'] = $ab->name;
+
+      $items['abidlink'] = ['#markup' => AddressBookData::geturl($abid)];
+      // Upload form for documents.
+      $items['form'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\UploadForm', $abid);
+
+      // Comments.
+      $items['comment'] = html_entity_decode($ab->comment, ENT_QUOTES, "utf-8");
+      $param_edit = 'comment|' . $abid . '|address_book|50%';
+      $items['url_comment'] = Url::fromRoute('ek_sales_modal', ['param' => $param_edit])->toString();
+      $items['edit_comment'] = $this->t('<a href="@url" class="@c"  >[ edit ]</a>', ['@url' => $items['url_comment'], '@c' => 'use-ajax red ']);
+
+      // Projects linked.
+      if ($this->moduleHandler->moduleExists('ek_projects')) {
+        $query = "SELECT p.id,p.status,date,pcode,pname,level,priority,cid,last_modified,c.name
                     FROM {ek_project} p
                     INNER JOIN {ek_country} c
                     ON p.cid=c.id
                     WHERE client_id= :abid
                     order by date";
-                $data = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':abid' => $abid));
-                $items['projects'] = array();
-                while ($d = $data->fetchObject()) {
-                    $dmod = explode("|", $d->last_modified);
-                    $items['projects'][] = array(
-                        'link' => \Drupal::service('project.service')->geturl($d->id),
-                        'pcode' => $d->pcode,
-                        'pname' => $d->pname,
-                        'date' => $d->date,
-                        'last_modified' => date('Y-m-d', $dmod[1]),
-                        'country' => $d->name,
-                        'status' => $d->status,
-                        'level' => $d->level,
-                        'priority' => $d->priority,
-                    );
-                }
-            }
-            // reports
-            if ($this->moduleHandler->moduleExists('ek_intelligence')) {
-                $query = "SELECT id,serial,edit FROM {ek_ireports} WHERE abid=:c";
-                $data = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':c' => $abid));
-                $items['reports'] = array();
-                while ($d = $data->fetchObject()) {
-                    $link = Url::fromRoute('ek_intelligence.read', ['id' => $d->id])->toString();
-                    $items['reports'][] = array(
-                        'link' => $link,
-                        'serial' => '<a href="' . $link . '">' . $d->serial . '</a>',
-                        'edit' => date('Y-m-d', $d->edit),
-                    );
-                }
-            }
+        $data = Database::getConnection('external_db', 'external_db')
+          ->query($query, [':abid' => $abid]);
+        $items['projects'] = [];
+        while ($d = $data->fetchObject()) {
+          $dmod = explode("|", $d->last_modified);
+          $items['projects'][] = [
+            'link' => \Drupal::service('project.service')->geturl($d->id),
+            'pcode' => $d->pcode,
+            'pname' => $d->pname,
+            'date' => $d->date,
+            'last_modified' => date('Y-m-d', $dmod[1]),
+            'country' => $d->name,
+            'status' => $d->status,
+            'level' => $d->level,
+            'priority' => $d->priority,
+          ];
+        }
+      }
+      // Reports.
+      if ($this->moduleHandler->moduleExists('ek_intelligence')) {
+        $query = "SELECT id,serial,edit FROM {ek_ireports} WHERE abid=:c";
+        $data = Database::getConnection('external_db', 'external_db')
+          ->query($query, [':c' => $abid]);
+        $items['reports'] = [];
+        while ($d = $data->fetchObject()) {
+          $link = Url::fromRoute('ek_intelligence.read', ['id' => $d->id])->toString();
+          $items['reports'][] = [
+            'link' => $link,
+            'serial' => '<a href="' . $link . '">' . $d->serial . '</a>',
+            'edit' => date('Y-m-d', $d->edit),
+          ];
+        }
+      }
 
-            if ($this->moduleHandler->moduleExists('ek_projects')) {
-                // statistics cases
-                $query = "SELECT count(pcode) as sum, status FROM {ek_project}"
+      if ($this->moduleHandler->moduleExists('ek_projects')) {
+        // Statistics cases.
+        $query = "SELECT count(pcode) as sum, status FROM {ek_project}"
                         . " WHERE client_id=:abid group by status";
-                $data = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':abid' => $abid));
-                $total = 0;
-                $items['category_statistics'] = array();
-                $items['category_statistics']['open'] = 0;
-                $items['category_statistics']['awarded'] = 0;
-                $items['category_statistics']['completed'] = 0;
-                $items['category_statistics']['closed'] = 0;
-                while ($d = $data->fetchObject()) {
-                    if ($d->sum == null) {
-                        $d->sum = '0';
-                    }
-                    $total += $d->sum;
-                    $items['category_statistics'][$d->status] = (int) $d->sum;
-                }
-                $items['category_statistics']['total'] = $total;
+        $data = Database::getConnection('external_db', 'external_db')
+          ->query($query, [':abid' => $abid]);
+        $total = 0;
+        $items['category_statistics'] = [];
+        $items['category_statistics']['open'] = 0;
+        $items['category_statistics']['awarded'] = 0;
+        $items['category_statistics']['completed'] = 0;
+        $items['category_statistics']['closed'] = 0;
+        while ($d = $data->fetchObject()) {
+          if ($d->sum == NULL) {
+            $d->sum = '0';
+          }
+          $total += $d->sum;
+          $items['category_statistics'][$d->status] = (int) $d->sum;
+        }
+        $items['category_statistics']['total'] = $total;
 
-                // Prepare Morris.js chart data for projects pie chart
-                if ($items['category_statistics']['total'] > 0) {
-                    $items['project_status_chart_html'] = '<div id="project-status-chart"></div>';
-                    
-                    $projectChartData = [
-                        ['label' => (string) $this->t('Open'), 'value' => (int) $items['category_statistics']['open']],
-                        ['label' => (string) $this->t('Awarded'), 'value' => (int) $items['category_statistics']['awarded']],
-                        ['label' => (string) $this->t('Completed'), 'value' => (int) $items['category_statistics']['completed']],
-                        ['label' => (string) $this->t('Closed'), 'value' => (int) $items['category_statistics']['closed']],
-                    ];
-                }
+        // Prepare Morris.js chart data for projects pie chart.
+        if ($items['category_statistics']['total'] > 0) {
+          $items['project_status_chart_html'] = '<div id="project-status-chart"></div>';
 
-                $items['category_year_statistics'] = array();
-                $query = "SELECT id,type FROM {ek_project_type}";
-                $type = Database::getConnection('external_db', 'external_db')
-                                ->query($query)->fetchAllKeyed();
+          $projectChartData = [
+                ['label' => (string) $this->t('Open'), 'value' => (int) $items['category_statistics']['open']],
+                ['label' => (string) $this->t('Awarded'), 'value' => (int) $items['category_statistics']['awarded']],
+                ['label' => (string) $this->t('Completed'), 'value' => (int) $items['category_statistics']['completed']],
+                ['label' => (string) $this->t('Closed'), 'value' => (int) $items['category_statistics']['closed']],
+          ];
+        }
 
-                for ($y = date('Y') - 6; $y <= date('Y'); $y++) {
-                    $total = 0;
-                    $query = "SELECT count(pcode) as sum, category FROM {ek_project} WHERE "
+        $items['category_year_statistics'] = [];
+        $query = "SELECT id,type FROM {ek_project_type}";
+        $type = Database::getConnection('external_db', 'external_db')
+          ->query($query)->fetchAllKeyed();
+
+        for ($y = date('Y') - 6; $y <= date('Y'); $y++) {
+          $total = 0;
+          $query = "SELECT count(pcode) as sum, category FROM {ek_project} WHERE "
                             . "client_id=:abid ANd date like :d group by category";
 
-                    $data = Database::getConnection('external_db', 'external_db')
-                            ->query($query, array(':abid' => $abid, ':d' => $y . '%'));
+          $data = Database::getConnection('external_db', 'external_db')
+            ->query($query, [':abid' => $abid, ':d' => $y . '%']);
 
-                    $items['category_year_statistics'][$y] = array();
-                    while ($d = $data->fetchObject()) {
-                        $items['category_year_statistics'][$y][$type[$d->category]] = $d->sum;
-                    }
-                }
-            }
-            if ($this->moduleHandler->moduleExists('ek_finance')) {
-                //statistics sales
-                $settings = new \Drupal\ek_finance\FinanceSettings();
-                $items['baseCurrency'] = $settings->get('baseCurrency');
-            }
+          $items['category_year_statistics'][$y] = [];
+          while ($d = $data->fetchObject()) {
+            $items['category_year_statistics'][$y][$type[$d->category]] = $d->sum;
+          }
+        }
+      }
+      if ($this->moduleHandler->moduleExists('ek_finance')) {
+        // Statistics sales.
+        $settings = new FinanceSettings();
+        $items['baseCurrency'] = $settings->get('baseCurrency');
+      }
 
-            //sales data
-            if ($ab->type == '1') {
-                $source = 'invoice';
-                $query = "SELECT sum(totalbase) as total FROM {ek_sales_invoice_details} d "
+      // Sales data.
+      if ($ab->type == '1') {
+        $source = 'invoice';
+        $query = "SELECT sum(totalbase) as total FROM {ek_sales_invoice_details} d "
                         . "INNER JOIN {ek_sales_invoice} i ON d.serial=i.serial "
                         . "WHERE i.client=:abid";
 
-                $query2 = "SELECT amountbase as amount FROM {ek_sales_invoice} i "
+        $query2 = "SELECT amountbase as amount FROM {ek_sales_invoice} i "
                         . "WHERE i.client=:abid";
 
-                $query3 = "SELECT sum(amountbase) as sum FROM {ek_sales_invoice} WHERE "
+        $query3 = "SELECT sum(amountbase) as sum FROM {ek_sales_invoice} WHERE "
                         . "client=:abid AND date like :d";
 
-                $query4 = "SELECT date,pay_date FROM {ek_sales_invoice} "
+        $query4 = "SELECT date,pay_date FROM {ek_sales_invoice} "
                         . "WHERE client = :abid and status=:s";
-            } else {
-                $source = 'purchase';
-                $query = "SELECT sum(amountbase) as total FROM {ek_sales_purchase} "
+      }
+      else {
+        $source = 'purchase';
+        $query = "SELECT sum(amountbase) as total FROM {ek_sales_purchase} "
                         . "WHERE client=:abid";
 
-                $query2 = "SELECT amountbase as amount FROM {ek_sales_purchase} "
+        $query2 = "SELECT amountbase as amount FROM {ek_sales_purchase} "
                         . "WHERE client=:abid";
 
-                $query3 = "SELECT sum(amountbase) as sum FROM {ek_sales_purchase} WHERE "
+        $query3 = "SELECT sum(amountbase) as sum FROM {ek_sales_purchase} WHERE "
                         . "client=:abid AND date like :d";
 
-                $query4 = "SELECT date,pdate FROM {ek_sales_purchase} "
+        $query4 = "SELECT date,pdate FROM {ek_sales_purchase} "
                         . "WHERE client = :abid and status=:s";
-            }
+      }
 
-            $a = array(
-                ':abid' => $abid,
-            );
-            $items['total_income'] = Database::getConnection('external_db', 'external_db')
-                    ->query($query, $a)
-                    ->fetchField();
+      $a = [
+        ':abid' => $abid,
+      ];
+      $items['total_income'] = Database::getConnection('external_db', 'external_db')
+        ->query($query, $a)
+        ->fetchField();
 
-            $data = Database::getConnection('external_db', 'external_db')
-                    ->query($query2, $a);
+      $data = Database::getConnection('external_db', 'external_db')
+        ->query($query2, $a);
 
-            $inv = [0];
-            while ($d = $data->fetchObject()) {
-                array_push($inv, $d->amount);
-            }
-            $items['invoices'] = array(
-                'max' => (int) max($inv),
-                'min' => (int) min($inv),
-                'avg' => round((array_sum($inv) / count($inv)), 1)
-            );
+      $inv = [0];
+      while ($d = $data->fetchObject()) {
+        array_push($inv, $d->amount);
+      }
+      $items['invoices'] = [
+        'max' => (int) max($inv),
+        'min' => (int) min($inv),
+        'avg' => round((array_sum($inv) / count($inv)), 1),
+      ];
 
-            $items['sales_year'] = array();
-            for ($y = date('Y') - 6; $y <= date('Y'); $y++) {
-                $total = 0;
+      $items['sales_year'] = [];
+      for ($y = date('Y') - 6; $y <= date('Y'); $y++) {
+        $total = 0;
 
-                $data = Database::getConnection('external_db', 'external_db')
-                        ->query($query3, array(':abid' => $abid, ':d' => $y . '%'));
+        $data = Database::getConnection('external_db', 'external_db')
+          ->query($query3, [':abid' => $abid, ':d' => $y . '%']);
 
-                while ($d = $data->fetchObject()) {
-                    $items['sales_year'][$y] = $d->sum;
-                }
-            }
+        while ($d = $data->fetchObject()) {
+          $items['sales_year'][$y] = $d->sum;
+        }
+      }
 
-            // Prepare Morris.js chart data for invoice range
-            $items['invoice_chart_html'] = '<div id="invoice-range-chart"></div>';
-            
-            $invoiceChartData = [
-                ['category' => (string) $this->t('Highest'), 'value' => (int) $items['invoices']['max']],
-                ['category' => (string) $this->t('Lowest'), 'value' => (int) $items['invoices']['min']],
-                ['category' => (string) $this->t('Average'), 'value' => round($items['invoices']['avg'], 2)],
-            ];
+      // Prepare Morris.js chart data for invoice range.
+      $items['invoice_chart_html'] = '<div id="invoice-range-chart"></div>';
 
-            // Prepare Morris.js chart data for yearly sales
-            $items['sales_year_chart_html'] = '<div id="sales-year-chart"></div>';
-            
-            $salesYearChartData = [];
-            for ($y = date('Y') - 6; $y <= date('Y'); $y++) {
-                $salesYearChartData[] = [
-                    'year' => (string) $y,
-                    'value' => isset($items['sales_year'][$y]) ? round((float) $items['sales_year'][$y], 2) : 0
-                ];
-            }
+      $invoiceChartData = [
+            ['category' => (string) $this->t('Highest'), 'value' => (int) $items['invoices']['max']],
+            ['category' => (string) $this->t('Lowest'), 'value' => (int) $items['invoices']['min']],
+            ['category' => (string) $this->t('Average'), 'value' => round($items['invoices']['avg'], 2)],
+      ];
 
-            // Payment performance
-            $query4 = "SELECT date,pay_date FROM {ek_sales_invoice} "
+      // Prepare Morris.js chart data for yearly sales.
+      $items['sales_year_chart_html'] = '<div id="sales-year-chart"></div>';
+
+      $salesYearChartData = [];
+      for ($y = date('Y') - 6; $y <= date('Y'); $y++) {
+        $salesYearChartData[] = [
+          'year' => (string) $y,
+          'value' => isset($items['sales_year'][$y]) ? round((float) $items['sales_year'][$y], 2) : 0,
+        ];
+      }
+
+      // Payment performance.
+      $query4 = "SELECT date,pay_date FROM {ek_sales_invoice} "
                     . "WHERE client = :abid and status=:s";
 
-            $data = Database::getConnection('external_db', 'external_db')
-                    ->query($query4, array(':abid' => $abid, ':s' => 1));
+      $data = Database::getConnection('external_db', 'external_db')
+        ->query($query4, [':abid' => $abid, ':s' => 1]);
 
-            $af = array();
+      $af = [];
 
-            while ($d = $data->fetchObject()) {
-                $long = round((strtotime($d->pay_date) - strtotime($d->date)) / (24 * 60 * 60), 0);
-                array_push($af, $long);
-            }
-            if (count($af) > 0) {
-                $items['payment_performance'] = array(
-                    'max' => (int) max($af),
-                    'min' => (int) min($af),
-                    'avg' => round((array_sum($af) / count($af)), 1)
-                );
-            } else {
-                $items['payment_performance'] = array(
-                    'max' => 0,
-                    'min' => 0,
-                    'avg' => 0
-                );
-            }
-
-            // Prepare Morris.js chart data for payment performance
-            $items['payment_chart_html'] = '<div id="payment-performance-chart"></div>';
-            
-            $paymentChartData = [
-                ['category' => (string) $this->t('Highest'), 'value' => (int) $items['payment_performance']['max']],
-                ['category' => (string) $this->t('Lowest'), 'value' => (int) $items['payment_performance']['min']],
-                ['category' => (string) $this->t('Average'), 'value' => round($items['payment_performance']['avg'], 2)],
-            ];
-
-            // Build Morris charts configuration
-            $morris = array();
-            
-            // Project status pie chart
-            if (isset($projectChartData) && $items['category_statistics']['total'] > 0) {
-                $morris['project_status'] = array(
-                    'type' => 'Donut',
-                    'id' => 'project-status-chart',
-                    'element' => 'project-status-chart',
-                    'data' => $projectChartData,
-                    'resize' => TRUE,
-                );
-            }
-            
-            // Invoice range horizontal bar chart
-            $morris['invoice_range'] = array(
-                'type' => 'Bar',
-                'id' => 'invoice-range-chart',
-                'element' => 'invoice-range-chart',
-                'xkey' => 'category',
-                'ykeys' => ['value'],
-                'labels' => [($ab->type == 1) ? (string) $this->t('Sales') : (string) $this->t('Purchases')],
-                'data' => $invoiceChartData,
-                'hideHover' => 'auto',
-                'resize' => TRUE,
-            );
-            
-            // Yearly sales bar chart
-            $morris['sales_year'] = array(
-                'type' => 'Bar',
-                'id' => 'sales-year-chart',
-                'element' => 'sales-year-chart',
-                'xkey' => 'year',
-                'ykeys' => ['value'],
-                'labels' => [(string) $this->t('Yearly sales')],
-                'data' => $salesYearChartData,
-                'hideHover' => 'auto',
-                'resize' => TRUE,
-            );
-            
-            // Payment performance horizontal bar chart
-            $morris['payment_performance'] = array(
-                'type' => 'Bar',
-                'id' => 'payment-performance-chart',
-                'element' => 'payment-performance-chart',
-                'xkey' => 'category',
-                'ykeys' => ['value'],
-                'labels' => [(string) $this->t('Days')],
-                'data' => $paymentChartData,
-                'hideHover' => 'auto',
-                'resize' => TRUE,
-            );
-
-        } else { 
-            $items['abidname'] = $this->t('No data');
-            $items['abidlink'] = Url::fromRoute('ek_address_book.search')->toString();
-            $items['data'] = null;
-        }
-
-        return [
-            '#items' => $items,
-            '#title' => $this->t('Sales data'),
-            '#theme' => $theme,
-            '#attached' => array(
-                'drupalSettings' => array(
-                    'abid' => $abid,
-                    'salesdatacharts' => isset($morris) ? $morris : [],
-                ),
-                'library' => array(
-                    'ek_sales/ek_sales_css',
-                    'ek_admin/ek_admin_css',
-                    'ek_admin/ek_admin_charts',
-                    'ek_sales/ek_sales_data_charts',
-                ),
-            ),
-            '#cache' => [
-                'tags' => ['sales_data']
-            ],
+      while ($d = $data->fetchObject()) {
+        $long = round((strtotime($d->pay_date) - strtotime($d->date)) / (24 * 60 * 60), 0);
+        array_push($af, $long);
+      }
+      if (count($af) > 0) {
+        $items['payment_performance'] = [
+          'max' => (int) max($af),
+          'min' => (int) min($af),
+          'avg' => round((array_sum($af) / count($af)), 1),
         ];
+      }
+      else {
+        $items['payment_performance'] = [
+          'max' => 0,
+          'min' => 0,
+          'avg' => 0,
+        ];
+      }
+
+      // Prepare Morris.js chart data for payment performance.
+      $items['payment_chart_html'] = '<div id="payment-performance-chart"></div>';
+
+      $paymentChartData = [
+            ['category' => (string) $this->t('Highest'), 'value' => (int) $items['payment_performance']['max']],
+            ['category' => (string) $this->t('Lowest'), 'value' => (int) $items['payment_performance']['min']],
+            ['category' => (string) $this->t('Average'), 'value' => round($items['payment_performance']['avg'], 2)],
+      ];
+
+      // Build Morris charts configuration.
+      $morris = [];
+
+      // Project status pie chart.
+      if (isset($projectChartData) && $items['category_statistics']['total'] > 0) {
+        $morris['project_status'] = [
+          'type' => 'Donut',
+          'id' => 'project-status-chart',
+          'element' => 'project-status-chart',
+          'data' => $projectChartData,
+          'resize' => TRUE,
+        ];
+      }
+
+      // Invoice range horizontal bar chart.
+      $morris['invoice_range'] = [
+        'type' => 'Bar',
+        'id' => 'invoice-range-chart',
+        'element' => 'invoice-range-chart',
+        'xkey' => 'category',
+        'ykeys' => ['value'],
+        'labels' => [($ab->type == 1) ? (string) $this->t('Sales') : (string) $this->t('Purchases')],
+        'data' => $invoiceChartData,
+        'hideHover' => 'auto',
+        'resize' => TRUE,
+      ];
+
+      // Yearly sales bar chart.
+      $morris['sales_year'] = [
+        'type' => 'Bar',
+        'id' => 'sales-year-chart',
+        'element' => 'sales-year-chart',
+        'xkey' => 'year',
+        'ykeys' => ['value'],
+        'labels' => [(string) $this->t('Yearly sales')],
+        'data' => $salesYearChartData,
+        'hideHover' => 'auto',
+        'resize' => TRUE,
+      ];
+
+      // Payment performance horizontal bar chart.
+      $morris['payment_performance'] = [
+        'type' => 'Bar',
+        'id' => 'payment-performance-chart',
+        'element' => 'payment-performance-chart',
+        'xkey' => 'category',
+        'ykeys' => ['value'],
+        'labels' => [(string) $this->t('Days')],
+        'data' => $paymentChartData,
+        'hideHover' => 'auto',
+        'resize' => TRUE,
+      ];
+
+    }
+    else {
+      $items['abidname'] = $this->t('No data');
+      $items['abidlink'] = Url::fromRoute('ek_address_book.search')->toString();
+      $items['data'] = NULL;
     }
 
-    /**
-     * Return sales document data page
-     * data by address book entry
-     * @param abid
-     *  id of address book
-     */
-    public function DataBookDocuments(Request $request, $abid) {
-        $items['abidlink'] = ['#markup' => \Drupal\ek_address_book\AddressBookData::geturl($abid)];
-        //upload form for documents
-        $items['form'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\UploadForm', $abid);
-        $query = "SELECT count(id) FROM {ek_sales_documents} WHERE "
+    return [
+      '#items' => $items,
+      '#title' => $this->t('Sales data'),
+      '#theme' => $theme,
+      '#attached' => [
+        'drupalSettings' => [
+          'abid' => $abid,
+          'salesdatacharts' => $morris ?? [],
+        ],
+        'library' => [
+          'ek_sales/ek_sales_css',
+          'ek_admin/ek_admin_css',
+          'ek_admin/ek_admin_charts',
+          'ek_sales/ek_sales_data_charts',
+        ],
+      ],
+      '#cache' => [
+        'tags' => ['sales_data'],
+      ],
+    ];
+  }
+
+  /**
+   * Return sales document data page
+   * data by address book entry
+   *
+   * @param abid
+   *   id of address book
+   */
+  public function DataBookDocuments(Request $request, $abid) {
+    $items['abidlink'] = ['#markup' => AddressBookData::geturl($abid)];
+    // Upload form for documents.
+    $items['form'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\UploadForm', $abid);
+    $query = "SELECT count(id) FROM {ek_sales_documents} WHERE "
                 . "abid=:abid";
-        $items['document'] = Database::getConnection('external_db', 'external_db')
-                ->query($query, [':abid' => $abid])
-                ->fetchField();
+    $items['document'] = Database::getConnection('external_db', 'external_db')
+      ->query($query, [':abid' => $abid])
+      ->fetchField();
 
-        return [
-            '#title' => $this->t('Documents'),
-            '#items' => $items,
-            '#theme' => 'ek_sales_documents',
-            '#attached' => array(
-                'drupalSettings' => array('abid' => $abid),
-                'library' => array(
-                    'ek_sales/ek_sales_docs_updater',
-                    'ek_sales/ek_sales_css', 'ek_admin/ek_admin_css', 'ek_admin/classic_doc'),
-            ),
-            '#cache' => [
-                'tags' => ['sales_data']
-            ],
-        ];
+    return [
+      '#title' => $this->t('Documents'),
+      '#items' => $items,
+      '#theme' => 'ek_sales_documents',
+      '#attached' => [
+        'drupalSettings' => ['abid' => $abid],
+        'library' => [
+          'ek_sales/ek_sales_docs_updater',
+          'ek_sales/ek_sales_css', 'ek_admin/ek_admin_css', 'ek_admin/classic_doc',
+        ],
+      ],
+      '#cache' => [
+        'tags' => ['sales_data'],
+      ],
+    ];
+  }
+
+  /**
+   * @return array form to edit a serial number
+   * @param $doc
+   *   = document key i.e invoice|purchase
+   * @param $id
+   *   = id of doc
+   * @param $serial
+   *   = document current reference
+   */
+  public function EditSerial($doc, $id, $serial) {
+    $build = [];
+    switch ($doc) {
+      case 'invoice':
+        $tb = "ek_sales_invoice";
+        $route = 'ek_sales.invoices.list';
+        break;
+
+      case 'purchase':
+        $tb = "ek_sales_purchase";
+        $route = 'ek_sales.purchases.list';
+        break;
     }
 
-    /**
-     * @return array form to edit a serial number
-     * @param $doc = document key i.e invoice|purchase
-     * @param $id = id of doc
-     * @param $serial = document current reference
-     *
-     */
-    public function EditSerial($doc, $id, $serial) {
-        $build = [];
-        switch ($doc) {
-            case 'invoice':
-                $tb = "ek_sales_invoice";
-                $route = 'ek_sales.invoices.list';
-                break;
-            case 'purchase':
-                $tb = "ek_sales_purchase";
-                $route = 'ek_sales.purchases.list';
-                break;
+    $query = Database::getConnection('external_db', 'external_db')
+      ->select($tb, 't');
+    $query->fields('t', ['head', 'status']);
+    $query->condition('id', $id);
+    $data = $query->execute()->fetchObject();
+
+    $read = 1;
+    $access = AccessCheck::GetCompanyByUser();
+    if (!in_array($data->head, $access)) {
+      $read = 0;
+      $message = $this->t('You are not authorized to view this content');
+    }
+    if ($data->status <> 0) {
+      $read = 0;
+      $message = $this->t('This @doc cannot be changed because it has been paid.', ['@doc' => $doc]);
+    }
+
+    if ($read <> 1) {
+      if (!isset($message)) {
+        $message = $this->t('This @doc cannot be changed.', ['@doc' => $doc]);
+      }
+      $url = Url::fromRoute($route)->toString();
+      $items['type'] = 'edit';
+      $items['message'] = ['#markup' => $message];
+      $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+      return [
+        '#items' => $items,
+        '#theme' => 'ek_admin_message',
+        '#attached' => [
+          'library' => ['ek_admin/ek_admin_css'],
+        ],
+        '#cache' => ['max-age' => 0],
+      ];
+    }
+    else {
+      $build['edit_serial'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\EditSerial', $doc, $id, $tb, $serial);
+    }
+
+    return $build;
+  }
+
+  /**
+   * Return folders name autocomplete.
+   *
+   * @param request
+   *
+   * @return Json response
+   */
+  public function lookupFolders(Request $request, $abid = NULL) {
+    $query = Database::getConnection('external_db', 'external_db')
+      ->select('ek_sales_documents');
+    $data = $query
+      ->fields('ek_sales_documents', ['folder'])
+      ->distinct()
+      ->condition('abid', $abid)
+      ->condition('folder', $request->query->get('q') . '%', 'LIKE')
+      ->execute()
+      ->fetchCol();
+
+    return new JsonResponse($data);
+  }
+
+  /**
+   * Return data called to update documents for sales data.
+   */
+  public function load(Request $request) {
+    $query = Database::getConnection('external_db', 'external_db')
+      ->select('ek_sales_documents', 'd');
+    $query->fields('d');
+    $query->condition('abid', $request->get('abid'), '=');
+    $query->orderBy('folder', 'ASC');
+    $query->orderBy('id', 'ASC');
+    $list = $query->execute();
+
+    // Build list of documents.
+    $t = '';
+    $i = 0;
+    $items = [];
+    $data = NULL;
+    if (isset($list)) {
+      while ($l = $list->fetchObject()) {
+        $i++;
+        /* default values */
+        $items[$l->folder][$i]['folder'] = $l->folder;
+        $items[$l->folder][$i]['id'] = $l->id;
+        // Default file status on.
+        $items[$l->folder][$i]['fid'] = 1;
+        // Default delete action is on.
+        $items[$l->folder][$i]['delete'] = 1;
+        // Default icon.
+        $items[$l->folder][$i]['icon'] = 'file';
+        // Default.
+        $items[$l->folder][$i]['file_url'] = '';
+        // Default access management if off.
+        $items[$l->folder][$i]['access_url'] = 0;
+
+        $share = explode(',', $l->share);
+        $deny = explode(',', $l->deny);
+
+        if ($l->share == '0' || (in_array(\Drupal::currentUser()->id(), $share) && !in_array(\Drupal::currentUser()->id(), $deny))) {
+          $items[$l->folder][$i]['uri'] = $l->uri;
+          $extension = explode(".", $l->filename);
+          $extension = strtolower(array_pop($extension));
+          $items[$l->folder][$i]['icon'] = '_doc_list';
+          if (ek_admin_filter_ico($extension)) {
+            $items[$l->folder][$i]['icon'] = $extension . '_doc_list';
+          }
+
+          // Filename formating.
+          if (strlen($l->filename) > 30) {
+            $items[$l->folder][$i]['doc_name'] = substr($l->filename, 0, 30) . " ... ";
+          }
+          else {
+            $items[$l->folder][$i]['doc_name'] = $l->filename;
+          }
+
+          // File was deleted.
+          if ($l->fid == '0') {
+            $items[$l->folder][$i]['fid'] = 0;
+            $items[$l->folder][$i]['delete'] = 0;
+            $items[$l->folder][$i]['email'] = 0;
+            $items[$l->folder][$i]['extranet'] = 0;
+            $items[$l->folder][$i]['comment'] = $l->comment . " " . date('Y-m-d', $l->uri);
+          }
+          else {
+            if (!file_exists($l->uri)) {
+              // File not on server (archived?) TODO ERROR file path not detected.
+              $items[$l->folder][$i]['fid'] = 2;
+              $items[$l->folder][$i]['delete'] = 0;
+              $items[$l->folder][$i]['email'] = 0;
+              $items[$l->folder][$i]['extranet'] = 0;
+              $items[$l->folder][$i]['comment'] = $this->t('Document not available. Please contact administrator');
+            }
+            else {
+              // File exist.
+              $route = Url::fromRoute('ek_sales_delete_file', ['id' => $l->id])->toString();
+              $items[$l->folder][$i]['delete_url'] = $route;
+              $items[$l->folder][$i]['file_url'] = \Drupal::service('file_url_generator')->generateAbsoluteString($l->uri);
+              $items[$l->folder][$i]['delete'] = 1;
+              $items[$l->folder][$i]['comment'] = $l->comment;
+              $items[$l->folder][$i]['date'] = date('Y-m-d', $l->date);
+              $items[$l->folder][$i]['size'] = round($l->size / 1000, 0) . " Kb";
+            }
+          }
+
+          if ($l->fid != '0') {
+            // Add access link for non deleted files.
+            $param_access = 'access|' . $l->id . '|sales_doc';
+            $link = Url::fromRoute('ek_sales_modal', ['param' => $param_access])->toString();
+            $items[$l->folder][$i]['access_url'] = $link;
+          }
+        } //built list of accessible files by user
+      }
+    }
+    if ($i > 0) {
+      $render = ['#theme' => 'ek_sales_doc_view', '#items' => $items];
+      $data = \Drupal::service('renderer')->render($render);
+    }
+
+    return new JsonResponse(['data' => $data]);
+  }
+
+  /**
+   * Return ajax drag & drop.
+   */
+  public function dragDrop(Request $request) {
+    $from = explode("-", $request->get('from'));
+    $fields = ['folder' => $request->get('to')];
+    $result = Database::getConnection('external_db', 'external_db')
+      ->update('ek_sales_documents')
+      ->condition('id', $from[1])
+      ->fields($fields)
+      ->execute();
+
+    return new Response('', 204);
+  }
+
+  /**
+   * Search documents by keyword.
+   *
+   * @return array
+   */
+  public static function searchDoc(Request $request) {
+    $text = (NULL !== $request->query->get('q')) ? $request->query->get('q') : $request->query->get('term');
+    $result = [];
+    if (strpos($text, '%') >= 0) {
+      $text = str_replace('%', '', $text);
+    }
+    if (strlen($text) > 1) {
+      $query = Database::getConnection('external_db', 'external_db')
+        ->select('ek_sales_documents', 's');
+      $query->fields('s');
+      $query->innerJoin('ek_address_book', 'ab', 'ab.id=s.abid');
+      $query->fields('ab', ['name']);
+      $query->condition('filename', '%' . $text . '%', 'LIKE');
+      $data = $query->execute();
+      $result = [];
+      $me = \Drupal::currentUser()->id();
+      while ($r = $data->fetchObject()) {
+        $line = [];
+        $line['filename'] = str_ireplace($text, "<mark>" . $text . "</mark>", $r->filename);
+        $line['url'] = Url::fromRoute('ek_sales.document', ['abid' => $r->abid], ['fragment' => 'tr-' . $r->id])->toString();
+        $line['folder'] = "-";
+        if ($r->folder) {
+          $line['folder'] = $r->folder;
         }
+        $line['share'] = 1;
+        if ($r->share <> '0') {
+          $ids = explode(',', $r->share);
+          if (!in_array($me, $ids)) {
+            $line['share'] = 0;
+          }
+        }
+        $line['date'] = date('Y-m-d', $r->date);
+        $line['size'] = (round($r->size / 1000)) . ' Kb';
+        $line['ab'] = $r->name;
+
+        $result[] = $line;
+      }
+    }
+
+    return new JsonResponse($result);
+  }
+
+  /**
+   * AJAX callback handler for AjaxTestDialogForm.
+   */
+  public function modal($param) {
+    return $this->dialog(TRUE, $param);
+  }
+
+  /**
+   * AJAX callback handler for AjaxTestDialogForm.
+   */
+  public function nonModal($param) {
+    return $this->dialog(FALSE, $param);
+  }
+
+  /**
+   * Util to render dialog in ajax callback.
+   *
+   * @param bool $is_modal
+   *   (optional) TRUE if modal, FALSE if plain dialog. Defaults to FALSE.
+   *
+   * @return \Drupal\Core\Ajax\AjaxResponse
+   *   An ajax response object.
+   */
+  protected function dialog($is_modal = FALSE, $param = NULL) {
+    $param = explode('|', $param);
+    $content = [];
+    switch ($param[0]) {
+
+      case 'access':
+        $id = $param[1];
+        $type = $param[2];
+        $content = $this->formBuilder->getForm('Drupal\ek_sales\Form\DocAccessEdit', $id, $type);
+        $options = ['width' => '30%'];
+        break;
+
+      case 'comment':
+        $content = $this->formBuilder->getForm('Drupal\ek_sales\Form\SalesFieldEdit', $param[1], 'comment');
+        $options = ['width' => $param[3]];
+
+        break;
+
+      case 'invoice':
+        $id = $param[1];
+        $options = ['width' => '30%'];
+        $settings = new FinanceSettings();
+        $baseCurrency = $settings->get('baseCurrency');
+        $query = Database::getConnection('external_db', 'external_db')
+          ->select('ek_sales_invoice', 'i')
+          ->fields('i')
+          ->condition('id', $id)
+          ->execute();
+        $main = $query->fetchObject();
 
         $query = Database::getConnection('external_db', 'external_db')
-                ->select($tb, 't');
-        $query->fields('t', ['head', 'status']);
-        $query->condition('id', $id);
-        $data = $query->execute()->fetchObject();
+          ->select('ek_sales_invoice_details', 'd')
+          ->fields('d')
+          ->condition('serial', $main->serial)
+          ->execute();
+        $details = $query->fetchAll();
+        $total_with_tax = 0;
+        $total_no_tax = 0;
 
-        $read = 1;
-        $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
-        if (!in_array($data->head, $access)) {
-            $read = 0;
-            $message = $this->t('You are not authorized to view this content');
+        foreach ($details as $key => $line) {
+          if ($line->opt == 0) {
+            $total_no_tax += $line->total;
+          }
+          else {
+            $total_with_tax += $line->total;
+          }
         }
-        if ($data->status <> 0) {
-            $read = 0;
-            $message = $this->t('This @doc cannot be changed because it has been paid.', ['@doc' => $doc]);
-        }
+        $receivable = $total_with_tax * (1 + ($main->taxvalue / 100)) + $total_no_tax;
 
-        if ($read <> 1) {
-            if (!isset($message)) {
-                $message = $this->t('This @doc cannot be changed.', ['@doc' => $doc]);
-            }
-            $url = Url::fromRoute($route)->toString();
-            $items['type'] = 'edit';
-            $items['message'] = ['#markup' => $message];
-            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
-            return [
-                '#items' => $items,
-                '#theme' => 'ek_admin_message',
-                '#attached' => array(
-                    'library' => array('ek_admin/ek_admin_css'),
-                ),
-                '#cache' => ['max-age' => 0,],
-            ];
-        } else {
-            $build['edit_serial'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\EditSerial', $doc, $id, $tb, $serial);
-        }
-
-        return $build;
-    }
-
-    /**
-     * return folders name autocomplete
-     * @param request
-     * @return Json response
-     */
-    public function lookupFolders(Request $request, $abid = null) {
-        $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_sales_documents');
-        $data = $query
-                ->fields('ek_sales_documents', ['folder'])
-                ->distinct()
-                ->condition('abid', $abid)
-                ->condition('folder', $request->query->get('q') . '%', 'LIKE')
-                ->execute()
-                ->fetchCol();
-
-        return new JsonResponse($data);
-    }
-
-    /**
-     * Return data called to update documents for sales data
-     *
-     */
-    public function load(Request $request) {
-        $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_sales_documents', 'd');
-        $query->fields('d');
-        $query->condition('abid', $request->get('abid'), '=');
-        $query->orderBy('folder', 'ASC');
-        $query->orderBy('id', 'ASC');
-        $list = $query->execute();
-
-        //build list of documents
-        $t = '';
-        $i = 0;
-        $items = [];
-        $data = null;
-        if (isset($list)) {
-            while ($l = $list->fetchObject()) {
-                $i++;
-                /* default values */
-                $items[$l->folder][$i]['folder'] = $l->folder;
-                $items[$l->folder][$i]['id'] = $l->id;
-                $items[$l->folder][$i]['fid'] = 1; //default file status on
-                $items[$l->folder][$i]['delete'] = 1; //default delete action is on
-                $items[$l->folder][$i]['icon'] = 'file'; //default icon
-                $items[$l->folder][$i]['file_url'] = ''; //default
-                $items[$l->folder][$i]['access_url'] = 0; //default access management if off
-
-
-                $share = explode(',', $l->share);
-                $deny = explode(',', $l->deny);
-
-                if ($l->share == '0' || (in_array(\Drupal::currentUser()->id(), $share) && !in_array(\Drupal::currentUser()->id(), $deny))) {
-                    $items[$l->folder][$i]['uri'] = $l->uri;
-                    $extension = explode(".", $l->filename);
-                    $extension = strtolower(array_pop($extension));
-                    $items[$l->folder][$i]['icon'] = '_doc_list';
-                    if (ek_admin_filter_ico($extension)) {
-                        $items[$l->folder][$i]['icon'] = $extension . '_doc_list';
-                    }
-
-                    //filename formating
-                    if (strlen($l->filename) > 30) {
-                        $items[$l->folder][$i]['doc_name'] = substr($l->filename, 0, 30) . " ... ";
-                    } else {
-                        $items[$l->folder][$i]['doc_name'] = $l->filename;
-                    }
-
-                    if ($l->fid == '0') { //file was deleted
-                        $items[$l->folder][$i]['fid'] = 0;
-                        $items[$l->folder][$i]['delete'] = 0;
-                        $items[$l->folder][$i]['email'] = 0;
-                        $items[$l->folder][$i]['extranet'] = 0;
-                        $items[$l->folder][$i]['comment'] = $l->comment . " " . date('Y-m-d', $l->uri);
-                    } else {
-                        if (!file_exists($l->uri)) {
-                            //file not on server (archived?) TODO ERROR file path not detected
-                            $items[$l->folder][$i]['fid'] = 2;
-                            $items[$l->folder][$i]['delete'] = 0;
-                            $items[$l->folder][$i]['email'] = 0;
-                            $items[$l->folder][$i]['extranet'] = 0;
-                            $items[$l->folder][$i]['comment'] = $this->t('Document not available. Please contact administrator');
-                        } else {
-                            //file exist
-                            $route = Url::fromRoute('ek_sales_delete_file', array('id' => $l->id))->toString();
-                            $items[$l->folder][$i]['delete_url'] = $route;
-                            $items[$l->folder][$i]['file_url'] = \Drupal::service('file_url_generator')->generateAbsoluteString($l->uri);
-                            $items[$l->folder][$i]['delete'] = 1;
-                            $items[$l->folder][$i]['comment'] = $l->comment;
-                            $items[$l->folder][$i]['date'] = date('Y-m-d', $l->date);
-                            $items[$l->folder][$i]['size'] = round($l->size / 1000, 0) . " Kb";
-                        }
-                    }
-
-
-                    if ($l->fid != '0') {
-                        //add access link for non deleted files
-                        $param_access = 'access|' . $l->id . '|sales_doc';
-                        $link = Url::fromRoute('ek_sales_modal', ['param' => $param_access])->toString();
-                        $items[$l->folder][$i]['access_url'] = $link;
-                    }
-                } //built list of accessible files by user
-            }
-        }
-        if ($i > 0) {
-            $render = ['#theme' => 'ek_sales_doc_view', '#items' => $items];
-            $data = \Drupal::service('renderer')->render($render);
-        }
-
-        return new JsonResponse(array('data' => $data));
-    }
-
-    /**
-     * Return ajax drag & drop
-     *
-     */
-    public function dragDrop(Request $request) {
-        $from = explode("-", $request->get('from'));
-        $fields = array('folder' => $request->get('to'));
-        $result = Database::getConnection('external_db', 'external_db')
-                ->update('ek_sales_documents')
-                ->condition('id', $from[1])
-                ->fields($fields)
-                ->execute();
-
-        return new Response('', 204);
-    }
-
-    /**
-     * Search documents by keyword
-     *  
-     * @return array
-     */
-    public static function searchDoc(Request $request) {
-        $text = (null !== $request->query->get('q')) ? $request->query->get('q') : $request->query->get('term');
-        $result = [];
-        if (strpos($text, '%') >= 0) {
-                $text = str_replace('%', '', $text);
-        }
-        if(strlen($text) > 1) {
-            $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_sales_documents', 's');
-            $query->fields('s');
-            $query->innerJoin('ek_address_book', 'ab', 'ab.id=s.abid');
-            $query->fields('ab',['name']);
-            $query->condition('filename', '%' . $text . '%', 'LIKE');
-            $data = $query->execute();
-            $result = [];
-            $me = \Drupal::currentUser()->id();
-            while ($r = $data->fetchObject()) {
-                $line = [];
-                $line['filename'] = str_ireplace($text,"<mark>" . $text . "</mark>", $r->filename);
-                $line['url'] = Url::fromRoute('ek_sales.document', ['abid' => $r->abid],['fragment' => 'tr-' . $r->id])->toString();
-                $line['folder'] = "-";
-                if($r->folder){
-                    $line['folder'] = $r->folder;
-                }
-                $line['share'] = 1;
-                if($r->share <> '0') {
-                    $ids = explode(',',$r->share);
-                    if (!in_array($me,$ids)) {
-                       $line['share'] = 0; 
-                    }
-                }
-                $line['date'] = date('Y-m-d', $r->date);
-                $line['size'] = (round($r->size / 1000)) . ' Kb';
-                $line['ab'] = $r->name;
-
-                $result[] = $line;
-            }
-        }
-        
-        return new JsonResponse($result);
-    }
-
-
-    /**
-     * AJAX callback handler for AjaxTestDialogForm.
-     */
-    public function modal($param) {
-        return $this->dialog(true, $param);
-    }
-
-    /**
-     * AJAX callback handler for AjaxTestDialogForm.
-     */
-    public function nonModal($param) {
-        return $this->dialog(false, $param);
-    }
-
-    /**
-     * Util to render dialog in ajax callback.
-     *
-     * @param bool $is_modal
-     *   (optional) TRUE if modal, FALSE if plain dialog. Defaults to FALSE.
-     *
-     * @return \Drupal\Core\Ajax\AjaxResponse
-     *   An ajax response object.
-     */
-    protected function dialog($is_modal = false, $param = null) {
-        $param = explode('|', $param);
-        $content = [];
-        switch ($param[0]) {
-
-            case 'access':
-                $id = $param[1];
-                $type = $param[2];
-                $content = $this->formBuilder->getForm('Drupal\ek_sales\Form\DocAccessEdit', $id, $type);
-                $options = array('width' => '30%',);
-                break;
-
-            case 'comment':
-                $content = $this->formBuilder->getForm('Drupal\ek_sales\Form\SalesFieldEdit', $param[1], 'comment');
-                $options = array('width' => $param[3],);
-
-                break;
-
-            case 'invoice':
-                $id = $param[1];
-                $options = array('width' => '30%',);
-                $settings = new \Drupal\ek_finance\FinanceSettings();
-                $baseCurrency = $settings->get('baseCurrency');
-                $query = Database::getConnection('external_db', 'external_db')
-                            ->select('ek_sales_invoice', 'i')
-                            ->fields('i')
-                            ->condition('id', $id)
-                            ->execute();
-                $main = $query->fetchObject();
-
-                $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_sales_invoice_details', 'd')
-                    ->fields('d')
-                    ->condition('serial', $main->serial)
-                    ->execute();
-                $details = $query->fetchAll();
-                $total_with_tax = 0;
-                $total_no_tax = 0;
-
-                foreach($details as $key => $line) { 
-                    if($line->opt == 0) {
-                        $total_no_tax += $line->total;
-                    } else {
-                        $total_with_tax += $line->total;
-                    }
-                }
-                $receivable = $total_with_tax * (1 + ($main->taxvalue / 100)) + $total_no_tax;
-
-                $content['#markup'] = "<table>"
+        $content['#markup'] = "<table>"
                         . "<tbody>"
                         . "<tr>"
                         . "<td>" . $this->t('Receivable') . "</td><td>" . $main->currency . " " . number_format($receivable, 2) . "<td>"
@@ -1111,31 +1142,31 @@ class SalesController extends ControllerBase {
                         . "<tr>"
                         . "<td>" . $this->t('Balance') . "</td><td>" . $main->currency . " " . number_format($receivable - $main->amountreceived, 2) . "<td>"
                         . "<tr>"
-                        . "<td>" . $this->t('Exchange rate') . " " . $main->date . "</td><td>"  . round($main->amount/$main->amountbase, 4) . "<td>"
+                        . "<td>" . $this->t('Exchange rate') . " " . $main->date . "</td><td>" . round($main->amount / $main->amountbase, 4) . "<td>"
                         . "</tbody></table><br/>";
 
-                if ($this->moduleHandler->moduleExists('ek_finance')) {
-                    // extract journal transactions;
-                    $journal = new Journal();
-                    $content['#markup'] .= $journal->entity_history(['entity' => 'invoice', 'id' => $id]);
-                }
-                break;
+        if ($this->moduleHandler->moduleExists('ek_finance')) {
+          // Extract journal transactions;.
+          $journal = new Journal();
+          $content['#markup'] .= $journal->entity_history(['entity' => 'invoice', 'id' => $id]);
+        }
+        break;
 
-            case 'purchase':
-                $id = $param[1];
-                $options = array('width' => '30%',);
-                $settings = new \Drupal\ek_finance\FinanceSettings();
-                $baseCurrency = $settings->get('baseCurrency');
-                $query = 'SELECT currency,amount,amountpaid,pdate,amountbase,balancebase,taxvalue '
+      case 'purchase':
+        $id = $param[1];
+        $options = ['width' => '30%'];
+        $settings = new FinanceSettings();
+        $baseCurrency = $settings->get('baseCurrency');
+        $query = 'SELECT currency,amount,amountpaid,pdate,amountbase,balancebase,taxvalue '
                         . 'FROM {ek_sales_purchase} WHERE id=:id';
-                $data = Database::getConnection('external_db', 'external_db')
-                        ->query($query, array(':id' => $id))
-                        ->fetchObject();
-                $gross = $data->amount + (round($data->amount * $data->taxvalue / 100, 2));
-                $bal = $gross - $data->amountpaid;
-                $base = $data->amountbase - $data->balancebase;
+        $data = Database::getConnection('external_db', 'external_db')
+          ->query($query, [':id' => $id])
+          ->fetchObject();
+        $gross = $data->amount + (round($data->amount * $data->taxvalue / 100, 2));
+        $bal = $gross - $data->amountpaid;
+        $base = $data->amountbase - $data->balancebase;
 
-                $content['#markup'] = "<table>"
+        $content['#markup'] = "<table>"
                         . "<tbody>"
                         . "<tr>"
                         . "<td>" . $this->t('Payable') . "</td><td>" . $data->currency . " " . number_format($gross, 2) . "<td>"
@@ -1146,230 +1177,245 @@ class SalesController extends ControllerBase {
                         . "<tr>"
                         . "<td>" . $this->t('Balance') . "</td><td>" . $data->currency . " " . number_format($bal, 2) . "<td>"
                         . "<tr>"
-                        . "<td>" . $this->t('Exchange rate') . " " . $data->date . "</td><td>"  . round($data->amount/$data->amountbase, 4) . "<td>"
+                        . "<td>" . $this->t('Exchange rate') . " " . $data->date . "</td><td>" . round($data->amount / $data->amountbase, 4) . "<td>"
                         . "</tbody></table><br/>";
 
-                if ($this->moduleHandler->moduleExists('ek_finance')) {
-                    // extract journal transactions;
-                    $journal = new Journal();
-                    $content['#markup'] .= $journal->entity_history(['entity' => 'purchase', 'id' => $id]);
-                }
-                break;
-
-            case 'quick_edit':
-                $param[0] = str_replace("_", " ", $param[0]) . " " . $param[2];
-                $options = array('width' => '50%',);
-                $content = $this->formBuilder->getForm('Drupal\ek_sales\Form\QuickEdit', $param[1], $param[2]);
-                break;
-        }
-
-        $response = new AjaxResponse();
-        $title = ucfirst($this->t($param[0]));
-        $content['#attached']['library'][] = 'core/drupal.dialog.ajax';
-
-
-        if ($is_modal) {
-            $dialog = new OpenModalDialogCommand($title, $content, $options);
-            $response->addCommand($dialog);
-        } else {
-            $selector = '#ajax-text-dialog-wrapper-1';
-            $response->addCommand(new OpenDialogCommand($selector, $title, $content));
-        }
-        return $response;
-    }
-
-    /**
-     * Return ajax delete confirmation alert
-     * @param $id document id
-     * @return ajax response
-     */
-    public function deleteFile($id) {
-        $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_sales_documents', 'd')
-                ->fields('d', ['filename'])
-                ->condition('id', $id, '=');
-        $file = $query->execute()->fetchField();
-        $url = Url::fromRoute('ek_sales_delete_file_confirm', ['id' => $id])->toString();
-        $content = array('content' =>
-            array('#markup' =>
-                "<div><a href='" . $url . "' class='use-ajax'>"
-                . $this->t('delete') . "</a> " . $file . "</div>")
-        );
-
-        $response = new AjaxResponse();
-
-        $title = $this->t('Confirm');
-        $content['#attached']['library'][] = 'core/drupal.dialog.ajax';
-
-        $response->addCommand(new OpenModalDialogCommand($title, $content));
-
-
-        return $response;
-    }
-
-    /**
-     * delete confirmed action
-     * @param $id document id
-     * @return ajax response
-     */
-    public function deleteFileConfirmed($id) {
-        $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_sales_documents', 'd')
-                ->fields('d')
-                ->condition('id', $id, '=');
-        $data = $query->execute()->fetchObject();
-
-        $share = explode(',', $data->share);
-        $deny = explode(',', $data->deny);
-        $user = \Drupal::currentUser()->id();
-        $del = 0;
-        $response = new AjaxResponse();
-        $response->addCommand(new CloseDialogCommand());
-
-        if ($data->share != '0') {
-            if (in_array($user, $share) and ! in_array($user, $deny)) {
-                //user has access
-                $del = 1;
-            }
-        } else {
-            //any user can delete
-            $del = 1;
-        }
-
-        if ($del == 1) {
-            $fields = array(
-                'uri' => date('U'),
-                'fid' => 0,
-                'comment' => $this->t('deleted by') . ' ' . \Drupal::currentUser()->getAccountName(),
-                'date' => time()
-            );
-
-            $delete = Database::getConnection('external_db', 'external_db')
-                    ->update('ek_sales_documents')->fields($fields)->condition('id', $id)
-                    ->execute();
-            if ($delete) {
-                //$query = "SELECT * FROM {file_managed} WHERE uri=:u";
-                //$file = db_query($query, [':u' => $p->uri])->fetchObject();
-                //file_delete($file->fid);
-                $query = Database::getConnection()->select('file_managed', 'f');
-                $query->fields('f', ['fid']);
-                $query->condition('uri', $p->uri);
-                $fid = $query->execute()->fetchField();
-                if (!$fid) {
-                    unlink($p->uri);
-                } else {
-                    $file = \Drupal\file\Entity\File::load($fid);
-                    $file->delete();
-                }
-            }
-            \Drupal\Core\Cache\Cache::invalidateTags(['sales_data']);
-            $log = 'sales document|user|' . \Drupal::currentUser()->id() . '|delete|' . $data->filename;
-            \Drupal::logger('ek_sales')->notice($log);
-            $response->addCommand(new RemoveCommand('#row' . $id));
-        } else {
-            $content = array('content' =>
-                array('#markup' => "<div>" . $this->t('access denied') . "</div>")
-            );
-            $log = 'sales document|user|' . \Drupal::currentUser()->id() . '|error delete|' . $data->filename;
-            \Drupal::logger('ek_sales')->notice($log);
-            $title = $this->t('Error');
-            $response->addCommand(new OpenModalDialogCommand($title, $content));
-        }
-
-        return $response;
-    }
-
-    /**
-     * Return ajax user autocomplete data
-     * Deprecated: use ek_admin resources autocomplete
-     */
-    public function userautocomplete(Request $request) {
-        /*
-          $text = $request->query->get('term');
-          $name = array();
-
-          $query = "SELECT distinct name from {users_field_data} WHERE mail like :t1 or name like :t2 ";
-          $a = array(':t1' => "$text%", ':t2' => "$text%");
-          //$name = db_query($query, $a)->fetchCol();
-
-          return new JsonResponse($name); */
-    }
-
-    /**
-     * @return array form to reset a payment
-     * @param $doc = document key i.e invoice|purchase
-     * @param $id = id of doc
-     *
-     */
-    public function ResetPayment($doc, $id) {
-        $build = [];
-        switch ($doc) {
-            case 'invoice':
-                $tb = "ek_sales_invoice";
-                $route = 'ek_sales.invoices.list';
-                break;
-            case 'purchase':
-                $tb = "ek_sales_purchase";
-                $route = 'ek_sales.purchases.list';
-                break;
-        }
-
-        $query = Database::getConnection('external_db', 'external_db')
-                ->select($tb, 't');
-        $query->fields('t', ['head', 'status', 'serial']);
-        $query->condition('id', $id);
-        $data = $query->execute()->fetchObject();
-
-        $read = 1;
-        $access = \Drupal\ek_admin\Access\AccessCheck::GetCompanyByUser();
-        if (!in_array($data->head, $access)) {
-            $read = 0;
-            $message = $this->t('You are not authorized to view this content');
-        }
-
-        $reco = 0;
         if ($this->moduleHandler->moduleExists('ek_finance')) {
-            if ($doc == 'invoice') {
-                $source = 'receipt';
-            }
-            if ($doc == 'purchase') {
-                $source = 'payment';
-            }
-            $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_journal', 't');
-            $query->addExpression('count(id)', 'sumValue');
-            $query->condition('coid', $data->head);
-            $query->condition('source', $source);
-            $query->condition('reference', $id);
-            $query->condition('reconcile', 1);
-
-            $reco = $query->execute()->fetchField();
-            if ($reco > 0) {
-                $message = $this->t('This entry cannot be deleted because it has been reconciled.');
-            }
+          // Extract journal transactions;.
+          $journal = new Journal();
+          $content['#markup'] .= $journal->entity_history(['entity' => 'purchase', 'id' => $id]);
         }
+        break;
 
-        if ($read == 0 || $reco > 0 || $data->status != 1) {
-            if (!isset($message)) {
-                $message = $this->t('This @doc cannot be reset because it has not been paid', ['@doc' => $doc]);
-            }
-            $url = Url::fromRoute($route)->toString();
-            $items['type'] = 'edit';
-            $items['message'] = ['#markup' => $message];
-            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
-            return [
-                '#items' => $items,
-                '#theme' => 'ek_admin_message',
-                '#attached' => array(
-                    'library' => array('ek_admin/ek_admin_css'),
-                ),
-                '#cache' => ['max-age' => 0,],
-            ];
-        } else {
-            $build['reset_pay'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\ResetPay', $doc, $id, $data->head, $data->serial);
-        }
-
-        return $build;
+      case 'quick_edit':
+        $param[0] = str_replace("_", " ", $param[0]) . " " . $param[2];
+        $options = ['width' => '50%'];
+        $content = $this->formBuilder->getForm('Drupal\ek_sales\Form\QuickEdit', $param[1], $param[2]);
+        break;
     }
+
+    $response = new AjaxResponse();
+    $title = ucfirst($this->t($param[0]));
+    $content['#attached']['library'][] = 'core/drupal.dialog.ajax';
+
+    if ($is_modal) {
+      $dialog = new OpenModalDialogCommand($title, $content, $options);
+      $response->addCommand($dialog);
+    }
+    else {
+      $selector = '#ajax-text-dialog-wrapper-1';
+      $response->addCommand(new OpenDialogCommand($selector, $title, $content));
+    }
+    return $response;
+  }
+
+  /**
+   * Return ajax delete confirmation alert.
+   *
+   * @param $id
+   *   document id
+   *
+   * @return ajax response
+   */
+  public function deleteFile($id) {
+    $query = Database::getConnection('external_db', 'external_db')
+      ->select('ek_sales_documents', 'd')
+      ->fields('d', ['filename'])
+      ->condition('id', $id, '=');
+    $file = $query->execute()->fetchField();
+    $url = Url::fromRoute('ek_sales_delete_file_confirm', ['id' => $id])->toString();
+    $content = [
+      'content' =>
+          [
+            '#markup' =>
+            "<div><a href='" . $url . "' class='use-ajax'>"
+            . $this->t('delete') . "</a> " . $file . "</div>",
+          ],
+    ];
+
+    $response = new AjaxResponse();
+
+    $title = $this->t('Confirm');
+    $content['#attached']['library'][] = 'core/drupal.dialog.ajax';
+
+    $response->addCommand(new OpenModalDialogCommand($title, $content));
+
+    return $response;
+  }
+
+  /**
+   * Delete confirmed action.
+   *
+   * @param $id
+   *   document id
+   *
+   * @return ajax response
+   */
+  public function deleteFileConfirmed($id) {
+    $query = Database::getConnection('external_db', 'external_db')
+      ->select('ek_sales_documents', 'd')
+      ->fields('d')
+      ->condition('id', $id, '=');
+    $data = $query->execute()->fetchObject();
+
+    $share = explode(',', $data->share);
+    $deny = explode(',', $data->deny);
+    $user = \Drupal::currentUser()->id();
+    $del = 0;
+    $response = new AjaxResponse();
+    $response->addCommand(new CloseDialogCommand());
+
+    if ($data->share != '0') {
+      if (in_array($user, $share) and !in_array($user, $deny)) {
+        // User has access.
+        $del = 1;
+      }
+    }
+    else {
+      // Any user can delete.
+      $del = 1;
+    }
+
+    if ($del == 1) {
+      $fields = [
+        'uri' => date('U'),
+        'fid' => 0,
+        'comment' => $this->t('deleted by') . ' ' . \Drupal::currentUser()->getAccountName(),
+        'date' => time(),
+      ];
+
+      $delete = Database::getConnection('external_db', 'external_db')
+        ->update('ek_sales_documents')->fields($fields)->condition('id', $id)
+        ->execute();
+      if ($delete) {
+        // $query = "SELECT * FROM {file_managed} WHERE uri=:u";
+        // $file = db_query($query, [':u' => $p->uri])->fetchObject();
+        // file_delete($file->fid);
+        $query = Database::getConnection()->select('file_managed', 'f');
+        $query->fields('f', ['fid']);
+        $query->condition('uri', $p->uri);
+        $fid = $query->execute()->fetchField();
+        if (!$fid) {
+          unlink($p->uri);
+        }
+        else {
+          $file = File::load($fid);
+          $file->delete();
+        }
+      }
+      Cache::invalidateTags(['sales_data']);
+      $log = 'sales document|user|' . \Drupal::currentUser()->id() . '|delete|' . $data->filename;
+      \Drupal::logger('ek_sales')->notice($log);
+      $response->addCommand(new RemoveCommand('#row' . $id));
+    }
+    else {
+      $content = [
+        'content' =>
+            ['#markup' => "<div>" . $this->t('access denied') . "</div>"],
+      ];
+      $log = 'sales document|user|' . \Drupal::currentUser()->id() . '|error delete|' . $data->filename;
+      \Drupal::logger('ek_sales')->notice($log);
+      $title = $this->t('Error');
+      $response->addCommand(new OpenModalDialogCommand($title, $content));
+    }
+
+    return $response;
+  }
+
+  /**
+   * Return ajax user autocomplete data
+   * Deprecated: use ek_admin resources autocomplete
+   */
+  public function userautocomplete(Request $request) {
+    /*
+    $text = $request->query->get('term');
+    $name = array();
+
+    $query = "SELECT distinct name from {users_field_data} WHERE mail like :t1 or name like :t2 ";
+    $a = array(':t1' => "$text%", ':t2' => "$text%");
+    //$name = db_query($query, $a)->fetchCol();
+
+    return new JsonResponse($name); */
+  }
+
+  /**
+   * @return array form to reset a payment
+   * @param $doc
+   *   = document key i.e invoice|purchase
+   * @param $id
+   *   = id of doc
+   */
+  public function ResetPayment($doc, $id) {
+    $build = [];
+    switch ($doc) {
+      case 'invoice':
+        $tb = "ek_sales_invoice";
+        $route = 'ek_sales.invoices.list';
+        break;
+
+      case 'purchase':
+        $tb = "ek_sales_purchase";
+        $route = 'ek_sales.purchases.list';
+        break;
+    }
+
+    $query = Database::getConnection('external_db', 'external_db')
+      ->select($tb, 't');
+    $query->fields('t', ['head', 'status', 'serial']);
+    $query->condition('id', $id);
+    $data = $query->execute()->fetchObject();
+
+    $read = 1;
+    $access = AccessCheck::GetCompanyByUser();
+    if (!in_array($data->head, $access)) {
+      $read = 0;
+      $message = $this->t('You are not authorized to view this content');
+    }
+
+    $reco = 0;
+    if ($this->moduleHandler->moduleExists('ek_finance')) {
+      if ($doc == 'invoice') {
+        $source = 'receipt';
+      }
+      if ($doc == 'purchase') {
+        $source = 'payment';
+      }
+      $query = Database::getConnection('external_db', 'external_db')
+        ->select('ek_journal', 't');
+      $query->addExpression('count(id)', 'sumValue');
+      $query->condition('coid', $data->head);
+      $query->condition('source', $source);
+      $query->condition('reference', $id);
+      $query->condition('reconcile', 1);
+
+      $reco = $query->execute()->fetchField();
+      if ($reco > 0) {
+        $message = $this->t('This entry cannot be deleted because it has been reconciled.');
+      }
+    }
+
+    if ($read == 0 || $reco > 0 || $data->status != 1) {
+      if (!isset($message)) {
+        $message = $this->t('This @doc cannot be reset because it has not been paid', ['@doc' => $doc]);
+      }
+      $url = Url::fromRoute($route)->toString();
+      $items['type'] = 'edit';
+      $items['message'] = ['#markup' => $message];
+      $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+      return [
+        '#items' => $items,
+        '#theme' => 'ek_admin_message',
+        '#attached' => [
+          'library' => ['ek_admin/ek_admin_css'],
+        ],
+        '#cache' => ['max-age' => 0],
+      ];
+    }
+    else {
+      $build['reset_pay'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\ResetPay', $doc, $id, $data->head, $data->serial);
+    }
+
+    return $build;
+  }
 
 }

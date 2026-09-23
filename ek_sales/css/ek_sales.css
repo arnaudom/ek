@@ -718,3 +718,19 @@ tr.drop-folder {
         display: none;
     }
 }
+
+/* Per-user task alert flags in document lists (purchases / invoices) */
+.task-flag {
+    font-size: 0.85em;
+    margin-left: 4px;
+}
+
+/* Expired task */
+.task-flag--expired {
+    color: #ff0000;
+}
+
+/* Pending (open) task */
+.task-flag--pending {
+    color: #0088cc;
+}

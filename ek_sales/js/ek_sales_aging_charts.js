@@ -93,12 +93,15 @@
         var statusSpan = r.status
           ? ' <span class="aging-partial">(' + r.status + ')</span>'
           : '';
+        var proformaTag = r.isProforma
+          ? ' <span class="aging-proforma">[proforma]</span>'
+          : '';
         var taxCell = r.tax > 0
           ? fmt(r.tax, r.currency)
           : '—';
 
         html += '<tr class="' + rowClass + '">';
-        html += '<td>' + r.numberLink + statusSpan + '</td>';
+        html += '<td>' + r.numberLink + proformaTag + statusSpan + '</td>';
         html += '<td>' + r.client + '</td>';
         html += '<td>' + r.due + '</td>';
         html += '<td class="' + (r.age > 0 ? 'aging-days--overdue' : 'aging-days--future') + '">'
