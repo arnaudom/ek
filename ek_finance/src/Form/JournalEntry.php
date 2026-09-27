@@ -531,6 +531,7 @@ class JournalEntry extends FormBase {
     if (!empty($template_id)) {
       $template = $this->journalTemplateService->load($template_id, $coid);
       if ($template) {
+        $form_state->set('selected_template_id', (int) $template['id']);
         $payload = $this->journalTemplateService->decodePayload($template['payload']);
         $rows = $payload['rows'] ?? [];
 
@@ -548,6 +549,9 @@ class JournalEntry extends FormBase {
           $form_state->setValue(['itemTable', $index, 'comment'], $row['comment'] ?? '');
         }
       }
+    }
+    else {
+      $form_state->set('selected_template_id', NULL);
     }
 
     $form_state->set('step', 3);
@@ -587,6 +591,7 @@ class JournalEntry extends FormBase {
     }
 
     $template_id = $this->journalTemplateService->save([
+      'id' => $form_state->get('selected_template_id'),
       'uid' => \Drupal::currentUser()->id(),
       'coid' => $form_state->getValue('coid'),
       'name' => $name,

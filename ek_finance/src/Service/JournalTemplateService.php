@@ -105,8 +105,6 @@ class JournalTemplateService {
     if (!empty($data['id'])) {
       $connection->update('ek_journal_template')
         ->fields([
-          'uid' => $record['uid'],
-          'coid' => $record['coid'],
           'name' => $record['name'],
           'description' => $record['description'],
           'currency' => $record['currency'],
@@ -116,6 +114,7 @@ class JournalTemplateService {
           'changed' => $record['changed'],
         ])
         ->condition('id', (int) $data['id'], '=')
+        ->condition('coid', $record['coid'], '=')
         ->execute();
       return (int) $data['id'];
     }

@@ -1363,3 +1363,91 @@ function ek_finance_update_8023() {
     
     
 }
+
+/**
+ * Create the journal entry templates table.
+ */
+function ek_finance_update_8024() {
+    $schema = Database::getConnection('external_db', 'external_db')->schema();
+
+    if (!$schema->tableExists('ek_journal_template')) {
+        $table = [
+            'description' => 'Stores reusable journal entry templates.',
+            'fields' => [
+                'id' => [
+                    'description' => 'Primary Key: Unique ID.',
+                    'type' => 'serial',
+                    'unsigned' => TRUE,
+                    'not null' => TRUE,
+                ],
+                'uid' => [
+                    'description' => 'User who created the template.',
+                    'type' => 'int',
+                    'unsigned' => TRUE,
+                    'not null' => TRUE,
+                ],
+                'coid' => [
+                    'description' => 'Company owning the template.',
+                    'type' => 'int',
+                    'unsigned' => TRUE,
+                    'not null' => TRUE,
+                ],
+                'name' => [
+                    'description' => 'Template name.',
+                    'type' => 'varchar',
+                    'length' => 128,
+                    'not null' => TRUE,
+                ],
+                'description' => [
+                    'description' => 'Template description.',
+                    'type' => 'varchar',
+                    'length' => 255,
+                    'not null' => FALSE,
+                ],
+                'currency' => [
+                    'description' => 'Journal currency code.',
+                    'type' => 'char',
+                    'length' => 3,
+                    'not null' => TRUE,
+                ],
+                'fx_rate' => [
+                    'description' => 'Foreign exchange rate.',
+                    'type' => 'varchar',
+                    'length' => 32,
+                    'not null' => TRUE,
+                ],
+                'pattern' => [
+                    'description' => 'Journal entry pattern.',
+                    'type' => 'varchar',
+                    'length' => 64,
+                    'not null' => TRUE,
+                ],
+                'payload' => [
+                    'description' => 'Serialized journal entry rows.',
+                    'type' => 'text',
+                    'size' => 'big',
+                    'not null' => TRUE,
+                ],
+                'created' => [
+                    'description' => 'Creation timestamp.',
+                    'type' => 'datetime',
+                    'not null' => TRUE,
+                ],
+                'changed' => [
+                    'description' => 'Last changed timestamp.',
+                    'type' => 'datetime',
+                    'not null' => TRUE,
+                ],
+            ],
+            'primary key' => ['id'],
+            'unique keys' => [
+                'uq_journal_template' => ['uid', 'coid', 'name'],
+            ],
+        ];
+
+        $schema->createTable('ek_journal_template', $table);
+        return t('Journal template table created.');
+    }
+
+    return t('Journal template table already exists.');
+}

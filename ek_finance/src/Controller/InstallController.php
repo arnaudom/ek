@@ -648,7 +648,31 @@ class InstallController extends ControllerBase
         if ($db) {
             $markup .= 'AB bank table installed<br/>';
         }
+
         
+        $query = "CREATE TABLE IF NOT EXISTS `ek_journal_template` (
+            `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            `uid` INT UNSIGNED NOT NULL,
+            `coid` INT UNSIGNED NOT NULL,
+            `name` VARCHAR(128) NOT NULL,
+            `description` VARCHAR(255) DEFAULT NULL,
+            `currency` CHAR(3) NOT NULL,
+            `fx_rate` VARCHAR(32) NOT NULL,
+            `pattern` VARCHAR(64) NOT NULL,
+            `payload` JSON NOT NULL,
+            `created` DATETIME NOT NULL,
+            `changed` DATETIME NOT NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY uq_journal_template (uid, coid, name)
+            ) 
+            ENGINE=InnoDB
+            COMMENT='Table to save GJ templates'
+            COLLATE='utf8mb4_unicode_ci'
+            ;";
+        $db = Database::getConnection('external_db', 'external_db')->query($query);
+        if ($db) {
+            $markup .= 'GJ templates table installed<br/>';
+        }
 
         $link = Url::fromRoute('ek_admin.main', array(), array())->toString();
         $markup .= '<br/>' . $this->t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
