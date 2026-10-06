@@ -110,11 +110,23 @@ class ConvertQuotation extends FormBase {
             $chart = $this->settings->get('chart');
             $AidOptions = \Drupal\ek_finance\AidList::listaid($data->head, [$chart['income'], $chart['other_income']], 1);
             $baseCurrency = $this->settings->get('baseCurrency');
-            if ($baseCurrency <> $data->currency) {
+            // Use the submitted currency when the form is being rebuilt so the
+            // exchange rate and required flag follow a currency change; fall
+            // back to the quotation currency on the initial build.
+            $currentCurrency = $form_state->getValue('currency') ?: $data->currency;
+            if ($baseCurrency <> $currentCurrency) {
                 $requireFx = true;
             } else {
                 $requireFx = false;
             }
+
+            // Pre-populate the exchange rate from the quotation currency so the
+            // field is initialised (1 for the base currency, the stored rate
+            // otherwise) and flag it as required for non-base currencies. The
+            // quotation table does not store amountbase, so the current rate is
+            // used, mirroring the Invoice / Purchase forms.
+            $form_state->set('fx_rate', \Drupal\ek_finance\CurrencyData::rate($currentCurrency));
+            $form_state->set('fx_rate_require', $requireFx);
         }
 
         $form['options'] = [
@@ -790,8 +802,8 @@ class ConvertQuotation extends FormBase {
             ];
         }
 
-        //FOOTER
-        if (isset($id) && $baseCurrency != $data->currency) {
+        // FOOTER
+        if ($data->currency != null && isset($id) && $baseCurrency != $data->currency) {
             $c = \Drupal\ek_finance\CurrencyData::currencyRates();
             $converted = round($grandtotal / $c[$data->currency], 2) . " " . $baseCurrency;
         } else {
@@ -972,6 +984,35 @@ class ConvertQuotation extends FormBase {
      * Callback
      */
     public function check_aid(array &$form, FormStateInterface $form_state) {
+        $description = '';
+        $fx_rate = '';
+        if ($form_state->getValue('currency')) {
+            if (!$form_state->getValue('head')) {
+                $description = "<div id='fx' class='messages messages--warning'>"
+                        . $this->t('You need to select header first. You cannot proceed.') . "</div>";
+            } else {
+                $description = '';
+                $settings = new CompanySettings($form_state->getValue('head'));
+                $aid = $settings->get('asset_account', $form_state->getValue('currency'));
+
+                if ($aid == '') {
+                    $l = "../ek_admin/company/edit-settings/" . $form_state->getValue('head');
+                    $description = "<div id='fx' class='messages messages--warning'>"
+                            . $this->t("There is no assets account defined for currency. Please <a href='@l'>edit settings</a> or contact administrator.", ['@l' => $l]) . "</div>";
+                } else {
+                    $fx_rate = \Drupal\ek_finance\CurrencyData::rate($form_state->getValue('currency'));
+                    if ($fx_rate == '1') {
+                        $form['options']['fx_rate']['#required'] = false;
+                    } else {
+                        // not base currency
+                        $form['options']['fx_rate']['#required'] = true;
+                    }
+                } // else -> aid
+            } // else -> coid
+        }
+
+        $form['options']['fx_rate']['#description'] = $description;
+        $form['options']['fx_rate']['#value'] = $fx_rate;
         return $form['options']['fx_rate'];
     }
 
@@ -1120,7 +1161,11 @@ class ConvertQuotation extends FormBase {
                 ->fetchField();
         $serial = ucwords(str_replace('-', '', $short)) . "-I-" . $date . "-" . ucwords(str_replace('-', '', $sup)) . "-" . $iid;
 
-        $fx_rate = round($form_state->getValue('fx_rate'), 4);
+        // Guard against empty / non-numeric input: PHP 8 no longer accepts a
+        // non-numeric string in round() (throws TypeError). When no rate is
+        // provided we keep $fx_rate empty so the fallback to CurrencyData::rate()
+        // below is used, preserving the previous PHP 7 behaviour.
+        $fx_rate = is_numeric($form_state->getValue('fx_rate')) ? round($form_state->getValue('fx_rate'), 4) : '';
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
             // used to calculate currency gain/loss from rate at invoice record time
@@ -1144,7 +1189,7 @@ class ConvertQuotation extends FormBase {
         $sum = 0;
         $values = [];
         if ($this->moduleHandler->moduleExists('ek_finance')) {
-            $journal = new \Drupal\ek_finance\Journal();
+            $journal = \Drupal::service('ek_finance.journal');
         }
         $rows = $form_state->getValue('itemTable');
         if (!empty($rows)) {

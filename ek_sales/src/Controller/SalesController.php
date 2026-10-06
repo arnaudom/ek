@@ -22,7 +22,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Drupal\ek_finance\Journal;
+use Drupal\ek_finance\Service\JournalService;
 use Drupal\ek_finance\FinanceSettings;
 
 /**
@@ -52,6 +52,13 @@ class SalesController extends ControllerBase {
    */
   protected $formBuilder;
 
+  /**
+   * The finance journal service.
+   *
+   * @var \Drupal\ek_finance\Service\JournalService
+   */
+  protected $journal;
+
   // Protected $uuidService;.
 
   /**
@@ -62,7 +69,8 @@ class SalesController extends ControllerBase {
               $container->get('database'),
               $container->get('form_builder'),
               $container->get('module_handler'),
-              $container->get('config.factory')
+              $container->get('config.factory'),
+              $container->get('ek_finance.journal')
       );
   }
 
@@ -73,17 +81,21 @@ class SalesController extends ControllerBase {
    *   A database connection.
    * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
    *   The form builder service.
+  * @param \Drupal\ek_finance\Service\JournalService $journal
+  *   The finance journal service.
    */
   public function __construct(
     Connection $database,
     FormBuilderInterface $form_builder,
     ModuleHandler $module_handler,
     ConfigFactoryInterface $config_factory,
+    JournalService $journal,
   ) {
     $this->database = $database;
     $this->formBuilder = $form_builder;
     $this->moduleHandler = $module_handler;
     $this->configFactory = $config_factory;
+    $this->journal = $journal;
   }
 
   /**
@@ -295,6 +307,16 @@ class SalesController extends ControllerBase {
       $purTotals[$key] = array_sum(array_column($purchaseBuckets[$key], 'baseValue'));
     }
 
+    // Total value of proforma invoices (base currency), flagged in $processTable.
+    $proformaTotal = 0.0;
+    foreach ($invoiceBuckets as $rows) {
+      foreach ($rows as $row) {
+        if (!empty($row['isProforma'])) {
+          $proformaTotal += (float) $row['baseValue'];
+        }
+      }
+    }
+
     $overdueKeys = ['a', 'b', 'c', 'd', 'e'];
     $soonKeys    = ['f'];
     $futureKeys  = ['g', 'h', 'i'];
@@ -310,6 +332,7 @@ class SalesController extends ControllerBase {
       'purTotal'    => array_sum($purTotals),
     ];
     $kpi['netPosition'] = $kpi['invTotal'] - $kpi['purTotal'];
+    $kpi['invProforma'] = $proformaTotal;
 
     // -----------------------------------------------------------------------
     // 8. Build Morris chart data arrays
@@ -365,6 +388,7 @@ class SalesController extends ControllerBase {
             . '<div class="aging-kpi aging-kpi--soon"><span class="aging-kpi__label">' . $this->t('Due within 30 days (in)') . '</span><span class="aging-kpi__value">' . $fmt($kpi['invSoon']) . '</span></div>'
             . '<div class="aging-kpi aging-kpi--soon aging-kpi--payable"><span class="aging-kpi__label">' . $this->t('Due within 30 days (out)') . '</span><span class="aging-kpi__value">' . $fmt($kpi['purSoon']) . '</span></div>'
             . '<div class="aging-kpi ' . $netClass . ' aging-kpi--net"><span class="aging-kpi__label">' . $this->t('Net cash position') . '</span><span class="aging-kpi__value">' . $fmt($kpi['netPosition']) . '</span></div>'
+            . '<div class="aging-kpi aging-kpi--proforma"><span class="aging-kpi__label">' . $this->t('Proforma invoices (value)') . '</span><span class="aging-kpi__value">' . $fmt($kpi['invProforma']) . '</span></div>'
             . '</div>';
 
     // Chart container markup.
@@ -1147,8 +1171,7 @@ class SalesController extends ControllerBase {
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
           // Extract journal transactions;.
-          $journal = new Journal();
-          $content['#markup'] .= $journal->entity_history(['entity' => 'invoice', 'id' => $id]);
+          $content['#markup'] .= $this->journal->entity_history(['entity' => 'invoice', 'id' => $id]);
         }
         break;
 
@@ -1182,8 +1205,7 @@ class SalesController extends ControllerBase {
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
           // Extract journal transactions;.
-          $journal = new Journal();
-          $content['#markup'] .= $journal->entity_history(['entity' => 'purchase', 'id' => $id]);
+          $content['#markup'] .= $this->journal->entity_history(['entity' => 'purchase', 'id' => $id]);
         }
         break;
 

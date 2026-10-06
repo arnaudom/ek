@@ -120,7 +120,7 @@ class DeleteInvoice extends FormBase {
                 ->execute();
 
         if ($this->moduleHandler->moduleExists('ek_finance')) {
-            $journal = new \Drupal\ek_finance\Journal();
+                $journal = \Drupal::service('ek_finance.journal');
             $journalId = $journal->delete('invoice', $form_state->getValue('for_id'), $form_state->getValue('coid'));
             //count field sequence must be restored
             $journal->resetCount($form_state->getValue('coid'), $journalId[1]);

@@ -58,6 +58,9 @@
 .aging-kpi--positive .aging-kpi__value { color: #27ae60; }
 .aging-kpi--negative .aging-kpi__value { color: #c0392b; }
 
+.aging-kpi--proforma { border-top: 3px solid #8e44ad; }
+.aging-kpi--proforma .aging-kpi__value { color: #8e44ad; }
+
 /* =========================================================================
    Chart containers
    ========================================================================= */

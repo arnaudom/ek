@@ -110,7 +110,7 @@ class SettingsForms extends FormBase {
       '#description' => $this->t('Only files with a ".inc" extension are allowed.'),
       '#upload_location' => 'private://sales/templates/purchase/',
       '#upload_validators' => [
-        'file_validate_extensions' => ['inc'],
+        'file_validate_extensions' => ['inc', 'twig'],
       ],
       '#multiple' => FALSE,
     ];
@@ -142,7 +142,7 @@ class SettingsForms extends FormBase {
       '#description' => $this->t('Only files with a ".inc" extension are allowed.'),
       '#upload_location' => 'private://sales/templates/quotation/',
       '#upload_validators' => [
-        'file_validate_extensions' => ['inc'],
+        'file_validate_extensions' => ['inc', 'twig'],
       ],
       '#multiple' => FALSE,
     ];
@@ -174,7 +174,7 @@ class SettingsForms extends FormBase {
       '#description' => $this->t('Only files with a ".inc" extension are allowed.'),
       '#upload_location' => 'private://sales/templates/invoice/',
       '#upload_validators' => [
-        'file_validate_extensions' => ['inc'],
+        'file_validate_extensions' => ['inc', 'twig'],
       ],
       '#multiple' => FALSE,
     ];
