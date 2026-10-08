@@ -126,6 +126,15 @@ ek_admin_delete_file:
     _permission: 'company_documents'
     id: \d*
 
+ek_admin_doc_meta_edit:
+  path: 'ek_admin/company_documents/meta/{id}'
+  defaults:
+    _controller: '\Drupal\ek_admin\Controller\AdminController::docMetaEdit'
+    _title: 'Edit document'
+  requirements:
+    _permission: 'company_documents'
+    id: \d*
+
 ek_admin.company.new:
   path: '/ek_admin/company/new'
   defaults:

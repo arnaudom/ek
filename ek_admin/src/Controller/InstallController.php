@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\ek-admin\Controller\InstallController
- */
-
 namespace Drupal\ek_admin\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
@@ -20,83 +15,83 @@ use Symfony\Component\HttpFoundation\Request;
  * Controller routines for ek module routes.
  */
 class InstallController extends ControllerBase {
-    /* The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
-     */
+  /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandler
+   */
 
-    protected $moduleHandler;
 
-    /**
-     * The database service.
-     *
-     * @var \Drupal\Core\Database\Connection
-     */
-    protected $database;
+  protected $moduleHandler;
 
-    /**
-     * The form builder service.
-     *
-     * @var \Drupal\Core\Form\FormBuilderInterface
-     */
-    protected $formBuilder;
+  /**
+   * The database service.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $database;
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function create(ContainerInterface $container) {
-        return new static(
-                $container->get('database'),
-                $container->get('form_builder'),
-                $container->get('module_handler')
-        );
-    }
+  /**
+   * The form builder service.
+   *
+   * @var \Drupal\Core\Form\FormBuilderInterface
+   */
+  protected $formBuilder;
 
-    /**
-     * Constructs a  object.
-     *
-     * @param \Drupal\Core\Database\Connection $database
-     *   A database connection.
-     * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
-     *   The form builder service.
-     */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
-        $this->database = $database;
-        $this->formBuilder = $form_builder;
-        $this->moduleHandler = $module_handler;
-    }
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+              $container->get('database'),
+              $container->get('form_builder'),
+              $container->get('module_handler')
+      );
+  }
 
-    /**
-     * data update
-     *
-     *
-     */
-    public function update(Request $request) {
-        include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . '/' . 'update.php';
-        return ['#markup' => $markup, '#cache' => ['max-age' => 0]];
-    }
+  /**
+   * Constructs a  object.
+   *
+   * @param \Drupal\Core\Database\Connection $database
+   *   A database connection.
+   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+   *   The form builder service.
+   */
+  public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    $this->database = $database;
+    $this->formBuilder = $form_builder;
+    $this->moduleHandler = $module_handler;
+  }
 
-    /**
-     * data merge
-     * combine data from other database tables with current data tables
-     * @return Form
-     */
-    public function merge() {
-        $form_builder = $this->formBuilder();
-        $form = $form_builder->getForm('Drupal\ek_admin\Form\Merge');
+  /**
+   * Data update.
+   */
+  public function update(Request $request) {
+    include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . '/' . 'update.php';
+    return ['#markup' => $markup, '#cache' => ['max-age' => 0]];
+  }
 
-        return array(
-            $form,
-            '#title' => $this->t('Merge data'),
-        );
-    }
+  /**
+   * Data merge
+   * combine data from other database tables with current data tables
+   *
+   * @return Form
+   */
+  public function merge() {
+    $form_builder = $this->formBuilder();
+    $form = $form_builder->getForm('Drupal\ek_admin\Form\Merge');
 
-    /**
-     * install required tables in a separate database
-     *
-     */
-    public function install() {
-        $query = "CREATE TABLE IF NOT EXISTS `ek_admin_settings` (
+    return [
+      $form,
+      '#title' => $this->t('Merge data'),
+    ];
+  }
+
+  /**
+   * Install required tables in a separate database.
+   */
+  public function install() {
+    $query = "CREATE TABLE IF NOT EXISTS `ek_admin_settings` (
             `coid` INT NULL COMMENT 'company id, 0 = global',
             `settings` BLOB NULL COMMENT 'settings serialized array',
             UNIQUE INDEX `Index 1` (`coid`)
@@ -105,18 +100,18 @@ class InstallController extends ControllerBase {
     COLLATE='utf8_general_ci'
     ENGINE=InnoDB";
 
-        $db = Database::getConnection('external_db', 'external_db')->query($query);
-        if ($db) {
-            $markup = 'Settings table installed <br/>';
-        }
+    $db = Database::getConnection('external_db', 'external_db')->query($query);
+    if ($db) {
+      $markup = 'Settings table installed <br/>';
+    }
 
-        $query = "INSERT INTO `ek_admin_settings` (`coid`) VALUES (0)";
-        $db = Database::getConnection('external_db', 'external_db')->query($query);
-        if ($db) {
-            $markup = 'Settings table updated <br/>';
-        }
+    $query = "INSERT INTO `ek_admin_settings` (`coid`) VALUES (0)";
+    $db = Database::getConnection('external_db', 'external_db')->query($query);
+    if ($db) {
+      $markup = 'Settings table updated <br/>';
+    }
 
-        $query = "CREATE TABLE IF NOT EXISTS `ek_company` (
+    $query = "CREATE TABLE IF NOT EXISTS `ek_company` (
             `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
             `access` BLOB NULL DEFAULT NULL COMMENT 'serialized uid list access',
             `settings` BLOB NULL COMMENT 'holds accounts settings',
@@ -157,18 +152,19 @@ class InstallController extends ControllerBase {
               ENGINE=InnoDB
               AUTO_INCREMENT=1";
 
-        $db = Database::getConnection('external_db', 'external_db')->query($query);
-        if ($db) {
-            $markup .= 'Company / entity table installed <br/>';
-        }
+    $db = Database::getConnection('external_db', 'external_db')->query($query);
+    if ($db) {
+      $markup .= 'Company / entity table installed <br/>';
+    }
 
-        $query = "CREATE TABLE IF NOT EXISTS `ek_company_documents` (
+    $query = "CREATE TABLE IF NOT EXISTS `ek_company_documents` (
               `id` INT(5) NOT NULL AUTO_INCREMENT,
               `coid` INT(5) NULL DEFAULT NULL COMMENT 'company id',
               `fid` INT(5) NULL DEFAULT NULL COMMENT 'file managed id',
               `filename` VARCHAR(200) NULL DEFAULT NULL COMMENT 'Name of the file with no path components.' COLLATE 'utf8mb4_general_ci',
               `uri` VARCHAR(255) NULL DEFAULT NULL COMMENT 'the URI of the file' COLLATE 'utf8mb4_general_ci',
               `comment` VARCHAR(255) NULL DEFAULT NULL COMMENT 'comment' COLLATE 'utf8mb4_general_ci',
+              `folder` VARCHAR(200) NULL DEFAULT NULL COMMENT 'document tag or folder' COLLATE 'utf8mb4_general_ci',
               `date` INT(10) NULL DEFAULT '0' COMMENT 'document date',
               `size` INT(10) NULL DEFAULT '0' COMMENT 'document size',
               `share` VARCHAR(255) NULL DEFAULT '0' COMMENT 'list of shared uid',
@@ -180,12 +176,12 @@ class InstallController extends ControllerBase {
             ENGINE=InnoDB
             AUTO_INCREMENT=1";
 
-        $db = Database::getConnection('external_db', 'external_db')->query($query);
-        if ($db) {
-            $markup .= 'Company documents table installed <br/>';
-        }
+    $db = Database::getConnection('external_db', 'external_db')->query($query);
+    if ($db) {
+      $markup .= 'Company documents table installed <br/>';
+    }
 
-        $query = "CREATE TABLE IF NOT EXISTS `ek_country` (
+    $query = "CREATE TABLE IF NOT EXISTS `ek_country` (
                 `id` SMALLINT(5) NOT NULL AUTO_INCREMENT,
                 `access` BLOB NULL DEFAULT NULL COMMENT 'serialized list uid',
                 `name` VARCHAR(50) NULL DEFAULT NULL COMMENT 'country name',
@@ -199,22 +195,20 @@ class InstallController extends ControllerBase {
               ENGINE=InnoDB
               AUTO_INCREMENT=1";
 
-        $db = Database::getConnection('external_db', 'external_db')->query($query);
-        if ($db) {
-            $markup .= 'Countries table installed <br/>';
-        }
-
-
-
-        $link = Url::fromRoute('ek_admin.main', array(), array())->toString();
-        $markup .= '<br/>' . $this->t('You can proceed to further <a href="@c">settings</a>.', array('@c' => $link));
-
-        return array(
-            '#title' => $this->t('Installation of Ek_admin module'),
-            '#markup' => $markup
-                );
+    $db = Database::getConnection('external_db', 'external_db')->query($query);
+    if ($db) {
+      $markup .= 'Countries table installed <br/>';
     }
+
+    $link = Url::fromRoute('ek_admin.main', [], [])->toString();
+    $markup .= '<br/>' . $this->t('You can proceed to further <a href="@c">settings</a>.', ['@c' => $link]);
+
+    return [
+      '#title' => $this->t('Installation of Ek_admin module'),
+      '#markup' => $markup,
+    ];
+  }
 
 }
 
-//class
+// Class.

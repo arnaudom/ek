@@ -43,6 +43,9 @@ ek_admin_docs_updater:
     - core/drupalSettings
     - core/drupal.ajax
     - core/drupal.dialog
+    - core/drupal.dialog.ajax
+    - core/drupal.dialog.off_canvas
+    - core/once
     - core/backbone
  
     

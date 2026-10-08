@@ -502,3 +502,38 @@
 .zip_doc_list {
     background-image: url(../art/ico/zip.png);
 }
+
+/*
+ * Document folder grouping (company documents list)
+ */
+
+tr.folder > td.folder-title {
+    background: #e7e7e7;
+    border-top: 1px solid #dbdbdb;
+    border-bottom: 1px solid #dbdbdb;
+    font-weight: bold;
+    padding: 6px 8px;
+    cursor: pointer;
+}
+
+td.folder-title .folder-toggle {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-right: 6px;
+    vertical-align: middle;
+    border-left: 6px solid #696969;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    transform: rotate(90deg);
+    transition: transform 0.15s ease-in-out;
+}
+
+td.folder-title.folder-closed .folder-toggle {
+    transform: rotate(0deg);
+}
+
+td.folder-title small {
+    color: #696969;
+    font-weight: normal;
+}

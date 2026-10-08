@@ -4,17 +4,22 @@
  * Default theme implementation for rendering document list in admin data page
  *
  *
+ * Documents are grouped by folder, following the same pattern used in
+ * ek_projects_doc_view.html.twig.
+ *
  * Available items:
- *   id (int) 
- *   url (string)
- *   extension (sting)
- *   ico (string) icon class
- *   doc (string)
- *   date
- *   size
- *   del_button
- *   share_button
- *   comment (string)
+ *   folder (string) group key, empty string for documents with no folder
+ *   docs (array) documents of that folder, each with:
+ *     id (int) 
+ *     url (string)
+ *     ico (string) icon class
+ *     doc (string)
+ *     date
+ *     size
+ *     del_button
+ *     share_button
+ *     comment (string)
+ *     fid (bool) file status
  *
  *
  * @see ek_admin_docs_view
@@ -23,7 +28,16 @@
  */
 #}
 
-{% for key, item in items %}
+{% for folder, docs in items %}
+
+    <tr class="folder" id="folder-{{ loop.index }}">
+        <td colspan="6" class="folder-title">
+            <span class="folder-toggle"></span>{{ folder is empty ? '-' : folder }}
+            <small>({{ docs|length }})</small>
+        </td>
+    </tr>
+
+    {% for key, item in docs %}
 
     {% if item.fid == 1 %}
         <tr id='ad{{ item.id }}'>
@@ -37,7 +51,7 @@
                 
             </td>
             <td>{{ item.date }}</td>
-            <td>{{ item.comment }}</td>
+            <td>{% if item.more %}{{ item.more|raw }} {% endif %}{{ item.comment }}</td>
             {% if item.del_button != '0' %}
                 <td style="text-align: center;">
                     <a id='sd{{ item.id }}' href="{{ item.del_button }}" class='use-ajax red' title={{'delete the file'|t }} >
@@ -68,6 +82,8 @@
             
         </tr>
     {% endif %}
+
+    {% endfor %}
 
 {% endfor %}
 

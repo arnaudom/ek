@@ -1,8 +1,16 @@
 <?php
 
+/**
+ * @file
+ * @file
+ * @file
+ * .*/
+
 use Drupal\Core\Database\Database;
 
 /**
+ *
+ *
  * @file
  * Install, update and uninstall functions for the ek_admin module.
  */
@@ -10,40 +18,36 @@ use Drupal\Core\Database\Database;
 /**
  * Implements hook_install().
  */
+
+/**
+ *
+ */
 function ek_admin_install() {
-    $config = \Drupal::service('config.factory')->getEditable('system.site');
-    $config->set('page.front', '/ek')->save();
-    if(\Drupal::service('theme_handler')->themeExists('ek_login')){
-        \Drupal::service('theme_installer')->install(['ek_login']);
-    }
-    if(\Drupal::service('theme_handler')->themeExists('ek')){
-        \Drupal::service('theme_installer')->install(['ek']);
-        \Drupal::configFactory()->getEditable('system.theme')->set('default', 'ek')->save();
-    }
-    
+  $config = \Drupal::service('config.factory')->getEditable('system.site');
+  $config->set('page.front', '/ek')->save();
+  if (\Drupal::service('theme_handler')->themeExists('ek_login')) {
+    \Drupal::service('theme_installer')->install(['ek_login']);
+  }
+  if (\Drupal::service('theme_handler')->themeExists('ek')) {
+    \Drupal::service('theme_installer')->install(['ek']);
+    \Drupal::configFactory()->getEditable('system.theme')->set('default', 'ek')->save();
+  }
 }
 
 /**
  * Implements hook_uninstall().
  */
+
+/**
+ *
+ */
 function ek_admin_uninstall() {
-    
-   $configs = [
-    'tour.tour.admin.dashboard',
-    'tour.tour.admin.settings',
-    'tour.tour.admin.company_list',
-    'tour.tour.admin.company_new',
-    'tour.tour.admin.country_list',
-    'tour.tour.admin.company_access',
-    'tour.tour.admin.country_access',
-    'tour.tour.admin.verify_access',
-    ];
-    
-    foreach ($configs as $config) {
-        // Deleting config.
-        \Drupal::configFactory()->getEditable($config)->delete();
-    }    
-    
+  $configs = ['tour.tour.admin.dashboard', 'tour.tour.admin.settings', 'tour.tour.admin.company_list', 'tour.tour.admin.company_new', 'tour.tour.admin.country_list', 'tour.tour.admin.company_access', 'tour.tour.admin.country_access', 'tour.tour.admin.verify_access'];
+  foreach ($configs as $config) {
+    // Deleting config.
+    \Drupal::configFactory()->getEditable($config)->delete();
+  }
+
   $config = \Drupal::service('config.factory')->getEditable('system.site');
   $config->set('page.front', '/node/1')->save();
   \Drupal::service('theme_handler')->setDefault('bartik');
@@ -55,96 +59,115 @@ function ek_admin_uninstall() {
  * Implements hook_schema().
  * schema installation is not done at install time but within the application
  * in a separate database
+ * .*/
+
+/**
+ * Remove session event subscription.
  */
 
 /**
- * Remove session event subscription
- * 
-*/
+ *
+ */
 function ek_admin_update_8001() {
-   \Drupal::cache('data')->deleteAll();
-} 
+  \Drupal::cache('data')->deleteAll();
+}
+
 /**
- * Change route permission
- * 
-*/
+ * Change route permission. 
+ */ 
 function ek_admin_update_8002() {
+
     \Drupal::service('router.builder')->rebuild();
     \Drupal::cache('data')->deleteAll();
-    return t('Edit permission settings');  
+    return t('Edit permission settings');
 }
 
 /**
  * Add route for delete file
  * Clear cache for new doc template and css
-*/
+ **/
+
 function ek_admin_update_8003() {
-    \Drupal::service('router.builder')->rebuild();
-    \Drupal::cache('data')->deleteAll(); 
+  \Drupal::service('router.builder')->rebuild();
+  \Drupal::cache('data')->deleteAll();
 }
 
 /**
  * Add links for main menu
- * Rebuilt route and clear cache
-*/
+ * Rebuilt route and clear cache.
+ */
+
 function ek_admin_update_8004() {
-    \Drupal::service('router.builder')->rebuild();
-    \Drupal::cache('data')->deleteAll(); 
+  \Drupal::service('router.builder')->rebuild();
+  \Drupal::cache('data')->deleteAll();
 }
 
 /**
- * Edit route name
-*/
+ * Edit route name.
+ */
+
 function ek_admin_update_8005() {
-    \Drupal::service('router.builder')->rebuild();
+  \Drupal::service('router.builder')->rebuild();
 }
 
 /**
- * Fixed routing
-*/
+ * Fixed routing.
+ */
+
 function ek_admin_update_8006() {
-    \Drupal::service('router.builder')->rebuild();
+  \Drupal::service('router.builder')->rebuild();
 }
 
 /**
- * Home page
-*/
+ * Home page.
+ */
+
 function ek_admin_update_8007() {
-    \Drupal::service('router.builder')->rebuild();
-    \Drupal::cache('data')->deleteAll();
+  \Drupal::service('router.builder')->rebuild();
+  \Drupal::cache('data')->deleteAll();
 }
 
 /**
- * Rebuild route
-*/
+ * Rebuild route.
+ */
+
 function ek_admin_update_8008() {
-    \Drupal::service('router.builder')->rebuild();
-    \Drupal::cache('data')->deleteAll();
+  \Drupal::service('router.builder')->rebuild();
+  \Drupal::cache('data')->deleteAll();
 }
 
 /**
- * Add fields
-*/
+ * Add fields.
+ */
 function ek_admin_update_8009() {
-    $schema = \Drupal\Core\Database\Database::getConnection('external_db','external_db')->schema();
-    if(!$schema->fieldExists('ek_company', 'state')) {
-            $spec = array(
-                'description' => 'address state',
-                'type' => 'varchar',
-                'length' => 50,
-                'not null' => FALSE,
+  $schema = Database::getConnection('external_db', 'external_db')->schema();
+  if (!$schema->fieldExists('ek_company', 'state')) {
+    $spec = ['description' => 'address state', 'type' => 'varchar', 'length' => 50, 'not null' => FALSE];
+    $schema->addField('ek_company', 'state', $spec);
+  }
+  if (!$schema->fieldExists('ek_company', 'state2')) {
+    $spec = ['description' => 'address state', 'type' => 'varchar', 'length' => 50, 'not null' => FALSE];
+    $schema->addField('ek_company', 'state2', $spec);
+  }
+}
 
-            );
-            $schema->addField('ek_company', 'state', $spec);
-    }
-    if(!$schema->fieldExists('ek_company', 'state2')) {
-            $spec = array(
-                'description' => 'address state',
-                'type' => 'varchar',
-                'length' => 50,
-                'not null' => FALSE,
+/**
+ * Add fields.
+ */
+function ek_admin_update_10001() {
+  $schema = Database::getConnection('external_db', 'external_db')->schema();
+  if (!$schema->fieldExists('ek_company_documents', 'folder')) {
+    $spec = ['description' => 'document tag or folder', 'type' => 'varchar', 'length' => 200, 'not null' => FALSE];
+    $schema->addField('ek_company_documents', 'folder', $spec);
+    return t('Admin documents table field created.');
+  }
+  return t('Admin documents table field already exists.');
+}
 
-            );
-            $schema->addField('ek_company', 'state2', $spec);
-    }
+/**
+ * Add route.
+ */
+function ek_admin_update_10002() {
+  \Drupal::service('router.builder')->rebuild();
+  return t('Admin routes rebuilt.');
 }

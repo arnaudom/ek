@@ -29,6 +29,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Drupal\Component\Utility\Xss;
+use Drupal\Component\Serialization\Json;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_finance\FinanceSettings;
 use Drupal\ek_admin\GlobalSettings;
@@ -704,17 +705,58 @@ class AdminController extends ControllerBase {
     }
 
     /**
-     * @return html list
+     * Return the form to edit a company document comment / folder.
      *
+     * Used as ajax (off_canvas dialog) callback from the company documents list.
+     *
+     * @param int $id
+     *   The ek_company_documents record id.
+     *
+     * @return array
+     *   A render array holding the document meta edit form.
+     */
+    public function docMetaEdit($id) {
+        $p = Database::getConnection('external_db', 'external_db')
+                ->select('ek_company_documents', 'd')
+                ->fields('d', ['id', 'coid', 'filename', 'comment', 'folder'])
+                ->condition('id', $id, '=')
+                ->execute()
+                ->fetchObject();
+
+        $param = array(
+            'id' => $p->id,
+            'coid' => $p->coid,
+            'filename' => $p->filename,
+            'comment' => $p->comment,
+            'folder' => $p->folder,
+        );
+
+        return $this->formBuilder->getForm('Drupal\ek_admin\Form\DocMetaEdit', $param);
+    }
+
+    /**
+     * Return html list of company documents, grouped by folder.
+     *
+     * AJAX callback for the ek_admin_docs_updater library (js/updater.js).
+     * Documents are grouped by the 'folder' field, following the same pattern
+     * used in ek_projects\ProjectController::periodicalupdater().
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *   The request; 'coid' holds the company id.
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     *   JSON with the rendered list in the 'list' key.
      */
     public function load(Request $request) {
-        $query = "SELECT * FROM {ek_company_documents} WHERE coid = :c order by id";
-        $list = Database::getConnection('external_db', 'external_db')
-                ->query($query, array(':c' => $request->get('coid')));
+        $query = Database::getConnection('external_db', 'external_db')
+                ->select('ek_company_documents', 'd');
+        $query->fields('d');
+        $query->condition('coid', $request->get('coid'));
+        $query->orderBy('folder');
+        $query->orderBy('id');
+        $list = $query->execute();
 
-
-        // build list of documents
-        $t = '';
+        // build list of documents grouped by folder
         $i = 0;
         $items = [];
         if (isset($list)) {
@@ -724,41 +766,48 @@ class AdminController extends ControllerBase {
                 $deny = explode(',', $l->deny);
 
                 if ($l->share == '0' || (in_array(\Drupal::currentUser()->id(), $share) && !in_array(\Drupal::currentUser()->id(), $deny))) {
-                    $items[$i]['id'] = $l->id;
-                    $items[$i]['fid'] = 0; //default file status off
-                    $items[$i]['ico'] = '_doc_list';
-                    $items[$i]['doc'] = $l->filename;
-                    $items[$i]['comment'] = $l->comment;
-                    $items[$i]['date'] = date('Y-m-d', $l->date);
-                    $items[$i]['size'] = round($l->size / 1000, 0) . " Kb";
-                    $items[$i]['del_button'] = 0;
-                    $items[$i]['share_button'] = 0;
+                    // Group documents by folder; NULL folder is its own group.
+                    $folder = ($l->folder === NULL) ? '' : $l->folder;
+                    $items[$folder][$i]['id'] = $l->id;
+                    $items[$folder][$i]['fid'] = 0; //default file status off
+                    $items[$folder][$i]['ico'] = '_doc_list';
+                    $items[$folder][$i]['doc'] = $l->filename;
+                    $items[$folder][$i]['comment'] = $l->comment;
+                    $items[$folder][$i]['date'] = date('Y-m-d', $l->date);
+                    $items[$folder][$i]['size'] = round($l->size / 1000, 0) . " Kb";
+                    $items[$folder][$i]['del_button'] = 0;
+                    $items[$folder][$i]['share_button'] = 0;
 
                     $extension = explode(".", $l->filename);
                     $extension = array_pop($extension);
                     $icon_path = \Drupal::service('extension.path.resolver')->getPath('module', 'ek_admin') . '/art/ico/';
                     if (file_exists($icon_path . $extension . ".png")) {
-                        $items[$i]['ico'] = $extension . '_doc_list';
+                        $items[$folder][$i]['ico'] = $extension . '_doc_list';
                     }
 
                     if ($l->fid != '0') {
-                        //file not deleted
-                        $items[$i]['fid'] = 1;
+                        // file not deleted
+                        $items[$folder][$i]['fid'] = 1;
                         if (!file_exists($l->uri)) {
-                            //file not on server (archived?) TODO ERROR file path not detected
-                            $items[$i]['comment'] = $this->t('Document not available. Please contact administrator');
-                            $items[$i]['url'] = 0;
+                            // file not on server (archived?) TODO ERROR file path not detected
+                            $items[$folder][$i]['comment'] = $this->t('Document not available. Please contact administrator');
+                            $items[$folder][$i]['url'] = 0;
                         } else {
-                            //file exist
-                            $items[$i]['del_button'] = Url::fromRoute('ek_admin_confirm_delete_file', ['id' => $l->id])->toString();
-                            $items[$i]['url'] = \Drupal::service('file_url_generator')->generateAbsoluteString($l->uri);
+                            // file exist
+                            $items[$folder][$i]['del_button'] = Url::fromRoute('ek_admin_confirm_delete_file', ['id' => $l->id])->toString();
+                            $items[$folder][$i]['url'] = \Drupal::service('file_url_generator')->generateAbsoluteString($l->uri);
                             $param_access = 'access|' . $l->id . '|company_doc';
                             $link = Url::fromRoute('ek_admin_modal', ['param' => $param_access])->toString();
-                            $items[$i]['share_button'] = Url::fromRoute('ek_admin_modal', ['param' => $param_access])->toString();
-                            //$share_button = $this->t('<a href="@url" class="@c"  > access </a>', array('@url' => $link, '@c' => 'use-ajax red fa fa-lock'));
+                            $items[$folder][$i]['share_button'] = Url::fromRoute('ek_admin_modal', ['param' => $param_access])->toString();
+                            // link to edit the document comment / folder in an off_canvas dialog
+                            $meta_link = Url::fromRoute('ek_admin_doc_meta_edit', ['id' => $l->id])->toString();
+                            $dialog_options = Json::encode(['width' => '30%', 'resizable' => 1]);
+                            $items[$folder][$i]['more'] = '<a id="dm' . $l->id . '" href="' . $meta_link . '" class="use-ajax" '
+                                    . 'data-dialog-type="dialog" data-dialog-renderer="off_canvas" data-dialog-options='
+                                    . $dialog_options . '>[+]</a>';
                         }
                     }
-                } //in array
+                } 
             }
         }
         $render = ['#theme' => 'ek_admin_list_docs_view', '#items' => $items];
