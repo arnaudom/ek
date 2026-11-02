@@ -107,7 +107,6 @@ ek_messaging_read_delete:
   requirements:
     _permission: 'send_message'
 
-
 ek_messaging_read_do_archive:
   path: '/messaging/read/archive'
   defaults:

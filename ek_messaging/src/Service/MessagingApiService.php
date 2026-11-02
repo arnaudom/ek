@@ -3,6 +3,7 @@
 namespace Drupal\ek_messaging\Service;
 
 use Drupal\Component\Utility\Xss;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Mail\MailManagerInterface;
@@ -120,6 +121,48 @@ class MessagingApiService {
     }
 
     return $items;
+  }
+
+  /**
+   * Marks a message as read by an authorized user.
+   *
+   * The user must be either a recipient or the sender, matching the access
+   * check used by the message read page.
+   */
+  public function markMessageAsRead(int $message_id, int $uid): bool {
+    if ($message_id <= 0 || $uid <= 0) {
+      throw new \InvalidArgumentException('A valid message ID and user ID are required.');
+    }
+
+    $query = $this->getExternalDb()->select('ek_messaging', 'm');
+    $access = $query->orConditionGroup();
+    $access->condition('m.to', '%,' . $uid . ',%', 'LIKE');
+    $access->condition('m.from_uid', $uid);
+
+    $message = $query
+      ->fields('m', ['status'])
+      ->condition('m.id', $message_id)
+      ->condition($access)
+      ->execute()
+      ->fetchObject();
+
+    if (!$message) {
+      return FALSE;
+    }
+
+    $readers = explode(',', (string) $message->status);
+    $readers[] = (string) $uid;
+    $status = ',' . implode(',', array_unique($readers)) . ',';
+
+    $this->getExternalDb()->update('ek_messaging')
+      ->condition('id', $message_id)
+      ->fields(['status' => $status])
+      ->execute();
+
+    Cache::invalidateTags(['ek_message_inbox']);
+    Cache::invalidateTags(['config:system.menu.tools']);
+
+    return TRUE;
   }
 
   /**
