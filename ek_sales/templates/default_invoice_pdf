@@ -140,7 +140,11 @@ class EKPDF extends TCPDF {
             $this->SetFont('helvetica','',$font1);
             $this->Cell($f1,3, t("Beneficiary") . ':' ,$b,0);
             $this->SetFont('helvetica','B',$font1);
-            $this->Cell($f2,3, $this->company->name ,$b,1);
+            if($this->bank->beneficiary != '') {
+                $this->Cell($f2,3, $this->bank->beneficiary ,$b,1);
+            } else {
+                $this->Cell($f2,3, $this->company->name ,$b,1);
+            }
             $this->Cell($lm);
             $this->Cell($f1);
             $this->SetFont('helvetica','',$font1);
