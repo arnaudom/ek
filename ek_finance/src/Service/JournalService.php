@@ -3645,11 +3645,11 @@ class JournalService {
                     if ($format == 'html') {
                         if ($d->source == 'invoice' && $d->type == 'credit' && $d->exchange == '0') {
                             $return .= '<tr><td>' . $d->date . '</td><td>' . $d->aid . '</td>'
-                                    . '<td>' . $d->currency . ' ' . $d->value . '</td><td></td></tr>';
+                                    . '<td>' . $d->currency . ' ' . number_format($d->value) . '</td><td></td></tr>';
                         }
                         if ($d->source == 'receipt' && $d->type == 'debit' && $d->exchange == '0') {
                             $return .= '<tr><td>' . $d->date . '</td><td>' . $d->aid . '</td>'
-                                    . '<td></td><td>' . $d->currency . ' ' . $d->value . '</td></tr>';
+                                    . '<td></td><td>' . $d->currency . ' ' . number_format($d->value) . '</td></tr>';
                         }
                     } else {
                         $return[] = self::journalEntryDetails($d->id);
@@ -3680,7 +3680,7 @@ class JournalService {
                     if ($format == 'html') {
                         if ($d->source == 'purchase' && $d->type == 'credit' && $d->exchange == '0') {
                             $return .= '<tr><td>' . $d->date . '</td><td>' . $d->aid . '</td>'
-                                    . '<td>' . $d->currency . ' ' . $d->value . '</td><td></td></tr>';
+                                    . '<td>' . $d->currency . ' ' . number_format($d->value) . '</td><td></td></tr>';
                             $local[0] += $d->value;
                         }
                         if ($d->source == 'purchase' && $d->type == 'credit' && $d->exchange == '1' && $d->comment != 'currency exchange loss') {
@@ -3689,7 +3689,7 @@ class JournalService {
                         
                         if ($d->source == 'payment' && $d->type == 'debit' && $d->exchange == '0') {
                             $return .= '<tr><td>' . $d->date . '</td><td>' . $d->aid . '</td>'
-                                    . '<td></td><td>' . $d->currency . ' ' . $d->value . '</td></tr>';
+                                    . '<td></td><td>' . $d->currency . ' ' . number_format($d->value) . '</td></tr>';
                             $local[1] += $d->value;
                         }
                         if ($d->source == 'payment' && $d->type == 'debit' && $d->exchange == '1' && $d->comment != 'currency exchange loss') {
