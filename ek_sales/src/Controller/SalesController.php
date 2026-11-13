@@ -129,6 +129,14 @@ class SalesController extends ControllerBase {
           'Drupal\ek_admin\Form\FilterCompany'
       );
 
+    $build['aging_help'] = [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['aging-help']],
+      'text' => [
+        '#plain_text' => $this->t('Open and partially paid invoices and purchases are grouped by days from the due date (document date + payment terms): positive days are overdue, negative days are until due, and 0 is due today. Amounts are outstanding balances in the company’s base currency. Net position is total receivables minus payables, it should be apply againt the company available cash; proforma value is included in receivables to reflect share of cash receivable but not yet confirmed.'),
+      ],
+    ];
+
     if (!isset($_SESSION['coidfilter']['coid'])) {
       return $build;
     }
