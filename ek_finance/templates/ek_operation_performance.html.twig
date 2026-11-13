@@ -7,6 +7,9 @@
 {% set baseCurrency = items.baseCurrency %}
 {% set year = items.year %}
 <p>{{ 'Operations'|trans }} {{ 'from'|trans }}: {{ items.fiscal_dates.from }} {{ 'to'|trans }}: {{ items.fiscal_dates.to }}</p>
+<div class="op-report-help">
+    {{ 'The reporting period follows the company’s account year-end closing month; the dates above show the exact period. Revenue, purchases, and period activity reflect transactions posted during that period. Gross margin is revenue minus purchases and is shown only for completed projects; WIP projects have activity on only one side, so their results may be incomplete. The report can help to identify projects not yet completed across accounting periods. Outstanding receivables and payables are current unpaid balances, not balances at year-end. Totals include awarded and completed projects only.'|trans }}
+</div>
 
 {# --- Summary Cards --- 
 <div class="op-summary-cards">

@@ -1,5 +1,13 @@
 /* Operation Performance Report Styles */
 
+.op-report-help {
+    margin: 12px 0 20px;
+    padding: 10px 14px;
+    background: #e6f5ff;
+    border-left: 3px solid #6ab6fc;
+    color: #555;
+}
+
 .op-summary-cards {
     display: flex;
     flex-wrap: wrap;
