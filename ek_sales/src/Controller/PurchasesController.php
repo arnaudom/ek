@@ -148,6 +148,9 @@ class PurchasesController extends ControllerBase {
     ];
 
     if (isset($_SESSION['pfilter']) && $_SESSION['pfilter']['filter'] == 1) {
+      if (!empty($_SESSION['pfilter']['pcode'])) {
+        $query->condition('p.pcode', $_SESSION['pfilter']['pcode']);
+      }
       if ($_SESSION['pfilter']['keyword'] == '') {
         // Search based on input fields.
         $param = serialize([
@@ -157,6 +160,7 @@ class PurchasesController extends ControllerBase {
           'client' => $_SESSION['pfilter']['client'],
           'status' => $_SESSION['pfilter']['status'],
           'currency' => $_SESSION['pfilter']['currency'],
+          'pcode' => $_SESSION['pfilter']['pcode'] ?? '',
         ]);
         $excel = Url::fromRoute('ek_sales.purchases.excel', ['param' => $param])->toString();
         $build['excel'] = [
@@ -969,7 +973,7 @@ class PurchasesController extends ControllerBase {
       $or1->condition('head', $access, 'IN');
       $or1->condition('allocation', $access, 'IN');
 
-      $result = $query
+      $query
         ->fields('p')
         ->fields('b', ['name'])
         ->fields('c', ['name'])
@@ -979,8 +983,11 @@ class PurchasesController extends ControllerBase {
         ->condition('p.date', $options['to'], '<=')
         ->condition('p.head', $options['coid'], 'like')
         ->condition('p.currency', $options['currency'], 'LIKE')
-        ->orderBy('p.id', 'ASC')
-        ->execute();
+        ->orderBy('p.id', 'ASC');
+      if (!empty($options['pcode'])) {
+        $query->condition('p.pcode', $options['pcode']);
+      }
+      $result = $query->execute();
       // Create new Excel object.
       $objPHPExcel = new Spreadsheet();
       $objPHPExcel->getProperties()->setCreator("Ek")

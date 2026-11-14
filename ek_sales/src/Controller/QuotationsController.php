@@ -1,12 +1,15 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\ek\Controller\QuotationsController.
- */
-
 namespace Drupal\ek_sales\Controller;
 
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use Symfony\Component\HttpFoundation\Response;
+use Drupal\ek_address_book\AddressBookData;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
@@ -16,7 +19,6 @@ use Drupal\Component\Serialization\Json;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\Response;
 use Drupal\ek_admin\Access\AccessCheck;
 use Drupal\ek_sales\SalesSettings;
 use Drupal\ek_sales\PrintManager;
@@ -25,815 +27,849 @@ use Drupal\ek_sales\PrintManager;
  * Controller routines for ek module routes.
  */
 class QuotationsController extends ControllerBase {
-    /* The module handler.
-     *
-     * @var \Drupal\Core\Extension\ModuleHandler
+  /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandler
+   */
+
+
+  protected $moduleHandler;
+
+  /**
+   * The database service.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $database;
+
+  /**
+   * The form builder service.
+   *
+   * @var \Drupal\Core\Form\FormBuilderInterface
+   */
+  protected $formBuilder;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+              $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
+      );
+  }
+
+  /**
+   * Constructs a  object.
+   *
+   * @param \Drupal\Core\Database\Connection $database
+   *   A database connection.
+   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+   *   The form builder service.
+   */
+  public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
+    $this->database = $database;
+    $this->formBuilder = $form_builder;
+    $this->moduleHandler = $module_handler;
+  }
+
+  /**
+   * Return quotes.
+   */
+  public function SettingsQuotations(Request $request) {
+    $build['settings'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\SettingsQuotation');
+    return $build;
+  }
+
+  /**
+   *
+   */
+  public function ListQuotations(Request $request) {
+    $build['filter_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterQuotation');
+    $header = [
+      'number' => [
+        'data' => $this->t('Number'),
+        'id' => 'number',
+      ],
+      'revision' => [
+        'data' => $this->t('Revision'),
+        'class' => [RESPONSIVE_PRIORITY_LOW],
+        'id' => 'revision',
+      ],
+      'reference' => [
+        'data' => $this->t('Reference'),
+        'class' => [RESPONSIVE_PRIORITY_LOW],
+        'id' => 'reference',
+      ],
+      'issuer' => [
+        'data' => $this->t('Issued by'),
+        'class' => [RESPONSIVE_PRIORITY_LOW],
+        'id' => 'issuer',
+      ],
+      'date' => [
+        'data' => $this->t('Date'),
+        'sort' => 'desc',
+        'id' => 'date',
+      ],
+      'value' => [
+        'data' => $this->t('Value'),
+        'class' => [RESPONSIVE_PRIORITY_LOW],
+        'id' => 'value',
+      ],
+      'status' => [
+        'data' => $this->t('Status'),
+        'class' => [RESPONSIVE_PRIORITY_LOW],
+        'id' => 'status',
+      ],
+      'operations' => [
+        $this->t('Operations'),
+        'id' => 'operations',
+      ],
+    ];
+
+    /*
+     * Table - query data
      */
 
-    protected $moduleHandler;
-
-    /**
-     * The database service.
-     *
-     * @var \Drupal\Core\Database\Connection
-     */
-    protected $database;
-
-    /**
-     * The form builder service.
-     *
-     * @var \Drupal\Core\Form\FormBuilderInterface
-     */
-    protected $formBuilder;
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function create(ContainerInterface $container) {
-        return new static(
-                $container->get('database'), $container->get('form_builder'), $container->get('module_handler')
-        );
+    $globalsettings = new SalesSettings(0);
+    if (NULL !== $globalsettings->get('listlength')) {
+      $limit = $globalsettings->get('listlength');
+    }
+    else {
+      $limit = 25;
     }
 
-    /**
-     * Constructs a  object.
-     *
-     * @param \Drupal\Core\Database\Connection $database
-     *   A database connection.
-     * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
-     *   The form builder service.
-     */
-    public function __construct(Connection $database, FormBuilderInterface $form_builder, ModuleHandler $module_handler) {
-        $this->database = $database;
-        $this->formBuilder = $form_builder;
-        $this->moduleHandler = $module_handler;
-    }
+    $access = AccessCheck::GetCompanyByUser();
+    $query = Database::getConnection('external_db', 'external_db')
+      ->select('ek_sales_quotation', 'q');
+    $or1 = $query->orConditionGroup();
+    $or1->condition('head', $access, 'IN');
+    $or1->condition('allocation', $access, 'IN');
 
-    /**
-     * Return quotes
-     *
-     */
-    public function SettingsQuotations(Request $request) {
-        $build['settings'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\SettingsQuotation');
-        return $build;
-    }
-
-    public function ListQuotations(Request $request) {
-        $build['filter_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterQuotation');
-        $header = array(
-            'number' => array(
-                'data' => $this->t('Number'),
-                'id' => 'number',
-            ),
-            'revision' => array(
-                'data' => $this->t('Revision'),
-                'class' => array(RESPONSIVE_PRIORITY_LOW),
-                'id' => 'revision',
-            ),
-            'reference' => array(
-                'data' => $this->t('Reference'),
-                'class' => array(RESPONSIVE_PRIORITY_LOW),
-                'id' => 'reference',
-            ),
-            'issuer' => array(
-                'data' => $this->t('Issued by'),
-                'class' => array(RESPONSIVE_PRIORITY_LOW),
-                'id' => 'issuer',
-            ),
-            'date' => array(
-                'data' => $this->t('Date'),
-                'sort' => 'desc',
-                'id' => 'date',
-            ),
-            'value' => array(
-                'data' => $this->t('Value'),
-                'class' => array(RESPONSIVE_PRIORITY_LOW),
-                'id' => 'value',
-            ),
-            'status' => array(
-                'data' => $this->t('Status'),
-                'class' => array(RESPONSIVE_PRIORITY_LOW),
-                'id' => 'status',
-            ),
-            'operations' => [
-                $this->t('Operations'),
-                'id' => 'operations',
-            ]
-        );
-
-
-
-        /*
-         * Table - query data
-         */
-
-         $globalsettings = new SalesSettings(0);
-         if(null !== $globalsettings->get('listlength')) {
-             $limit = $globalsettings->get('listlength');
-         } else {
-             $limit = 25;
-         }
-        
-        $access = AccessCheck::GetCompanyByUser();
-        $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_sales_quotation', 'q');
-        $or1 = $query->orConditionGroup();
-        $or1->condition('head', $access, 'IN');
-        $or1->condition('allocation', $access, 'IN');
-
-
-        if (isset($_SESSION['qfilter']['filter']) && $_SESSION['qfilter']['filter'] == 1) {
-            if ($_SESSION['qfilter']['keyword'] != '') {
-                // keyword search base
-                $or2 = $query->orConditionGroup();
-                // Explode input by comma and trim whitespace from each keyword
-                $keywords = array_filter(array_map('trim', explode(',', $_SESSION['qfilter']['keyword'])));
-                if (count($keywords) > 1) {
-                    // Multiple keywords — create an OR group per keyword
-                    foreach ($keywords as $kw) {
-                        $kw_group = $query->orConditionGroup();
-                        $kw_group->condition('q.serial',  '%' . $kw . '%', 'LIKE');
-                        $kw_group->condition('q.pcode',   '%' . $kw . '%', 'LIKE');
-                        $or2->condition($kw_group);
-                    }
-                } else {
-                    // Single keyword — original behaviour
-                    $kw = $keywords[0] ?? '';
-                    $or2->condition('q.serial',  '%' . $kw . '%', 'LIKE');
-                    $or2->condition('q.pcode',   '%' . $kw . '%', 'LIKE');
-                }
-                $data = $query
-                        ->fields('q')
-                        ->condition($or1)
-                        ->condition($or2)
-                        ->extend('Drupal\Core\Database\Query\TableSortExtender')
-                        ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                        ->limit($limit)
-                        ->orderBy('id', 'ASC')
-                        ->execute();
-            } else {
-                // search based on input fields
-                $param = serialize(array(
-                    'coid' => $_SESSION['qfilter']['coid'],
-                    'from' => $_SESSION['qfilter']['from'],
-                    'to' => $_SESSION['qfilter']['to'],
-                    'client' => $_SESSION['qfilter']['client'],
-                    'status' => $_SESSION['qfilter']['status'],
-                    'currency' => $_SESSION['qfilter']['currency'],
-                ));
-                $excel = Url::fromRoute('ek_sales.quotations.excel', array('param' => $param))->toString();
-                $build['excel'] = array(
-                    '#markup' => "<a href='" . $excel . "' title='" . $this->t('Excel download') . "'><span class='ico excel green'></span></a>"
-                );
-                $or2 = $query->orConditionGroup();
-                $or2->condition('head', $_SESSION['qfilter']['coid']);
-                $or2->condition('allocation', $_SESSION['qfilter']['coid']);
-                $data = $query
-                        ->fields('q')
-                        ->condition($or1)
-                        ->condition($or2)
-                        ->condition('status', $_SESSION['qfilter']['status'], 'like')
-                        ->condition('client', $_SESSION['qfilter']['client'], 'like')
-                        ->condition('date', $_SESSION['qfilter']['from'], '>=')
-                        ->condition('date', $_SESSION['qfilter']['to'], '<=')
-                        ->condition('currency', $_SESSION['qfilter']['currency'], 'like')
-                        ->extend('Drupal\Core\Database\Query\TableSortExtender')
-                        ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                        ->limit($limit)
-                        ->orderBy('id', 'ASC')
-                        ->execute();
-            }
-        } else {
-            $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_sales_quotation', 'q');
-            $query->fields('q', ['date']);
-            $query->orderBy('date', "DESC");
-            $query->range(0, 1);
-            $from = $query->execute()->fetchField();
-            if ($from == '') {
-                $from = date('Y-m-d');
-            }
-            $data = $query
-                    ->fields('q')
-                    ->condition($or1)
-                    ->condition('status', '%', 'like')
-                    ->condition('date', $from, '>=')
-                    ->condition('date', date('Y-m-d'), '<=')
-                    ->extend('Drupal\Core\Database\Query\TableSortExtender')
-                    ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-                    ->limit($limit)
-                    ->orderBy('id', 'ASC')
-                    ->execute();
+    if (isset($_SESSION['qfilter']['filter']) && $_SESSION['qfilter']['filter'] == 1) {
+      if (!empty($_SESSION['qfilter']['pcode'])) {
+        $query->condition('q.pcode', $_SESSION['qfilter']['pcode']);
+      }
+      if ($_SESSION['qfilter']['keyword'] != '') {
+        // Keyword search base.
+        $or2 = $query->orConditionGroup();
+        // Explode input by comma and trim whitespace from each keyword.
+        $keywords = array_filter(array_map('trim', explode(',', $_SESSION['qfilter']['keyword'])));
+        if (count($keywords) > 1) {
+          // Multiple keywords — create an OR group per keyword.
+          foreach ($keywords as $kw) {
+            $kw_group = $query->orConditionGroup();
+            $kw_group->condition('q.serial', '%' . $kw . '%', 'LIKE');
+            $kw_group->condition('q.pcode', '%' . $kw . '%', 'LIKE');
+            $or2->condition($kw_group);
+          }
         }
+        else {
+          // Single keyword — original behaviour.
+          $kw = $keywords[0] ?? '';
+          $or2->condition('q.serial', '%' . $kw . '%', 'LIKE');
+          $or2->condition('q.pcode', '%' . $kw . '%', 'LIKE');
+        }
+        $data = $query
+          ->fields('q')
+          ->condition($or1)
+          ->condition($or2)
+          ->extend('Drupal\Core\Database\Query\TableSortExtender')
+          ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
+          ->limit($limit)
+          ->orderBy('id', 'ASC')
+          ->execute();
+      }
+      else {
+        // Search based on input fields.
+        $param = serialize([
+          'coid' => $_SESSION['qfilter']['coid'],
+          'from' => $_SESSION['qfilter']['from'],
+          'to' => $_SESSION['qfilter']['to'],
+          'client' => $_SESSION['qfilter']['client'],
+          'status' => $_SESSION['qfilter']['status'],
+          'currency' => $_SESSION['qfilter']['currency'],
+          'pcode' => $_SESSION['qfilter']['pcode'] ?? '',
+        ]);
+        $excel = Url::fromRoute('ek_sales.quotations.excel', ['param' => $param])->toString();
+        $build['excel'] = [
+          '#markup' => "<a href='" . $excel . "' title='" . $this->t('Excel download') . "'><span class='ico excel green'></span></a>",
+        ];
+        $or2 = $query->orConditionGroup();
+        $or2->condition('head', $_SESSION['qfilter']['coid']);
+        $or2->condition('allocation', $_SESSION['qfilter']['coid']);
+        $data = $query
+          ->fields('q')
+          ->condition($or1)
+          ->condition($or2)
+          ->condition('status', $_SESSION['qfilter']['status'], 'like')
+          ->condition('client', $_SESSION['qfilter']['client'], 'like')
+          ->condition('date', $_SESSION['qfilter']['from'], '>=')
+          ->condition('date', $_SESSION['qfilter']['to'], '<=')
+          ->condition('currency', $_SESSION['qfilter']['currency'], 'like')
+          ->extend('Drupal\Core\Database\Query\TableSortExtender')
+          ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
+          ->limit($limit)
+          ->orderBy('id', 'ASC')
+          ->execute();
+      }
+    }
+    else {
+      $query = Database::getConnection('external_db', 'external_db')
+        ->select('ek_sales_quotation', 'q');
+      $query->fields('q', ['date']);
+      $query->orderBy('date', "DESC");
+      $query->range(0, 1);
+      $from = $query->execute()->fetchField();
+      if ($from == '') {
+        $from = date('Y-m-d');
+      }
+      $data = $query
+        ->fields('q')
+        ->condition($or1)
+        ->condition('status', '%', 'like')
+        ->condition('date', $from, '>=')
+        ->condition('date', date('Y-m-d'), '<=')
+        ->extend('Drupal\Core\Database\Query\TableSortExtender')
+        ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
+        ->limit($limit)
+        ->orderBy('id', 'ASC')
+        ->execute();
+    }
 
-        // store company data
-        $companies = Database::getConnection('external_db', 'external_db')
-                ->query("SELECT id,name from {ek_company}")
-                ->fetchAllKeyed();
-        // store a. book data
-        $abook = Database::getConnection('external_db', 'external_db')
-                ->query("SELECT id,name from {ek_address_book}")
-                ->fetchAllKeyed();
-        $options = [];
-        
-        while ($r = $data->fetchObject()) {
+    // Store company data.
+    $companies = Database::getConnection('external_db', 'external_db')
+      ->query("SELECT id,name from {ek_company}")
+      ->fetchAllKeyed();
+    // Store a. book data.
+    $abook = Database::getConnection('external_db', 'external_db')
+      ->query("SELECT id,name from {ek_address_book}")
+      ->fetchAllKeyed();
+    $options = [];
 
-            $reference = "";
-            $number = "<a title='" . $this->t('view') . "' href='"
+    while ($r = $data->fetchObject()) {
+
+      $reference = "";
+      $number = "<a title='" . $this->t('view') . "' href='"
                     . Url::fromRoute('ek_sales.quotations.print_html', ['id' => $r->id], [])->toString() . "'>"
                     . $r->serial . "</a>";
 
-            if (isset($abook[$r->client])) {
-                $client_name = $abook[$r->client];
-                $reference = \Drupal\ek_address_book\AddressBookData::geturl($r->client, ['short' => 8]);
-            }
+      if (isset($abook[$r->client])) {
+        $client_name = $abook[$r->client];
+        $reference = AddressBookData::geturl($r->client, ['short' => 8]);
+      }
 
-            $co = $companies[$r->head];
-            if ($r->head <> $r->allocation) {
-                $for = isset($companies[$r->allocation]) ? "<br/>" . $this->t('for') . ": " . $companies[$r->allocation] : '';
-                $co = $co . $for;
-            }
+      $co = $companies[$r->head];
+      if ($r->head <> $r->allocation) {
+        $for = isset($companies[$r->allocation]) ? "<br/>" . $this->t('for') . ": " . $companies[$r->allocation] : '';
+        $co = $co . $for;
+      }
 
-            if ($r->pcode <> 'n/a') {
-                if ($this->moduleHandler->moduleExists('ek_projects')) {
-                    $reference .= "<div>" . \Drupal::service('project.service')->geturl($r->pcode, null, null, true) . "</div>";
-                }
-            }
-            $reference .= $r->title;
-            $value = $r->currency . ' ' . number_format($r->amount, 2);
+      if ($r->pcode <> 'n/a') {
+        if ($this->moduleHandler->moduleExists('ek_projects')) {
+          $reference .= "<div>" . \Drupal::service('project.service')->geturl($r->pcode, NULL, NULL, TRUE) . "</div>";
+        }
+      }
+      $reference .= $r->title;
+      $value = $r->currency . ' ' . number_format($r->amount, 2);
 
-            if($r->incoterm != null) {
-                $incoterm = explode('|', $r->incoterm);
-                if ($incoterm[0] != '0') {
-                    $value .= '<br/>' . $incoterm[0] . ' ' . $r->currency . ' ' . number_format(($r->amount * $incoterm[1] / 100), 2);
-                    $term = $r->amount * $incoterm[1] / 100;
-                } else {
-                    $term = 0;
-                }
-            }
+      if ($r->incoterm != NULL) {
+        $incoterm = explode('|', $r->incoterm);
+        if ($incoterm[0] != '0') {
+          $value .= '<br/>' . $incoterm[0] . ' ' . $r->currency . ' ' . number_format(($r->amount * $incoterm[1] / 100), 2);
+          $term = $r->amount * $incoterm[1] / 100;
+        }
+        else {
+          $term = 0;
+        }
+      }
 
-            if ($r->tax) {
-                $tax = explode('|', $r->tax);
-                $value .= '<br/>' . $tax[0] . ' ' . $r->currency . ' ' . number_format(($r->amount) * $tax[1] / 100, 2);
-            }
+      if ($r->tax) {
+        $tax = explode('|', $r->tax);
+        $value .= '<br/>' . $tax[0] . ' ' . $r->currency . ' ' . number_format(($r->amount) * $tax[1] / 100, 2);
+      }
 
-            // quotations are recorded by revision No. Each revision is kept in history
-            // only last revision is displayed
+      // Quotations are recorded by revision No. Each revision is kept in history
+      // only last revision is displayed.
+      $query = "SELECT DISTINCT revision FROM {ek_sales_quotation_details} WHERE serial=:s order by revision";
+      $revisions = Database::getConnection('external_db', 'external_db')
+        ->query($query, [':s' => $r->serial]);
 
-            $query = "SELECT DISTINCT revision FROM {ek_sales_quotation_details} WHERE serial=:s order by revision";
-            $revisions = Database::getConnection('external_db', 'external_db')
-                    ->query($query, [':s' => $r->serial]);
+      $revision_numbers = [];
 
-            $revision_numbers = array();
+      while ($revs = $revisions->fetchObject()) {
+        $revision_numbers[] = $revs->revision;
+        $last = $revs->revision;
+      }
 
-            while ($revs = $revisions->fetchObject()) {
-                $revision_numbers[] = $revs->revision;
-                $last = $revs->revision;
-            }
+      $query = 'SELECT sum(total) from {ek_sales_quotation_details} WHERE serial=:s and revision=:r';
+      $taxable = Database::getConnection('external_db', 'external_db')
+        ->query($query, [':s' => $r->serial, ':r' => $last])
+        ->fetchField();
+      // $tax = $taxable*$r->taxvalue/100;
+      if ($r->status == 0) {
+        $status = $this->t('open');
+      }
+      if ($r->status == 1) {
+        $status = $this->t('printed');
+      }
+      if ($r->status == 2) {
+        $status = $this->t('invoiced');
+      }
 
-            $query = 'SELECT sum(total) from {ek_sales_quotation_details} WHERE serial=:s and revision=:r';
-            $taxable = Database::getConnection('external_db', 'external_db')
-                    ->query($query, [':s' => $r->serial, ':r' => $last])
-                    ->fetchField();
-            //$tax = $taxable*$r->taxvalue/100;
+      $options[$r->id] = [
+        'number' => ['data' => ['#markup' => $number]],
+        'revision' => $last,
+        'reference' => ['data' => ['#markup' => $reference]],
+        'issuer' => ['data' => ['#markup' => $co], 'title' => $r->title],
+        'date' => ['data' => ['#markup' => $r->date]],
+        'value' => ['data' => ['#markup' => $value]],
+        'status' => ['data' => ['#markup' => $status]],
+      ];
 
+      $links = [];
+      $param = 'quick_edit|' . $r->id . '|quotation';
+      $links['qedit'] = [
+        'title' => $this->t('Quick edit'),
+        'url' => Url::fromRoute('ek_sales.modal_more', ['param' => $param]),
+        'attributes' => [
+          'class' => ['use-ajax'],
+          'data-dialog-type' => 'modal',
+          'data-dialog-options' => Json::encode(['width' => 700]),
+        ],
+      ];
+      if ($r->status <> 2) {
 
-            if ($r->status == 0) {
-                $status = $this->t('open');
-            }
-            if ($r->status == 1) {
-                $status = $this->t('printed');
-            }
-            if ($r->status == 2) {
-                $status = $this->t('invoiced');
-            }
-
-            $options[$r->id] = [
-                'number' => ['data' => ['#markup' => $number]],
-                'revision' => $last,
-                'reference' => ['data' => ['#markup' => $reference]],
-                'issuer' => ['data' => ['#markup' => $co], 'title' => $r->title],
-                'date' => ['data' => ['#markup' => $r->date]],
-                'value' => ['data' => ['#markup' => $value]],
-                'status' => ['data' => ['#markup' => $status]],
-            ];
-
-            $links = [];
-            $param = 'quick_edit|' . $r->id . '|quotation';
-            $links['qedit'] = [
-                'title' => $this->t('Quick edit'),
-                'url' => Url::fromRoute('ek_sales.modal_more', ['param' => $param]),
-                'attributes' => [
-                    'class' => ['use-ajax'],
-                    'data-dialog-type' => 'modal',
-                    'data-dialog-options' => Json::encode(['width' => 700,]),
-                ],
-            ];
-            if ($r->status <> 2) {
-
-                $links['edit'] = [
-                    'title' => $this->t('Edit'),
-                    'url' => Url::fromRoute('ek_sales.quotations.edit', ['id' => $r->id]),
-                ];
-
-                $links['invoice'] = [
-                    'title' => $this->t('Convert to invoice'),
-                    'url' => Url::fromRoute('ek_sales.quotations.invoice', ['id' => $r->id]),
-                ];
-            }
-
-            if (\Drupal::currentUser()->hasPermission('print_share_quotation')) {
-                $links['qprint'] = [
-                    'title' => $this->t('Print'),
-                    'url' => Url::fromRoute('ek_sales.quotations.print_share', ['id' => $r->id]),
-                    'attributes' => ['class' => ['ico', 'pdf']]
-                ];
-                $links['qexcel'] = [
-                    'title' => $this->t('Excel download'),
-                    'url' => Url::fromRoute('ek_sales.quotations.print_excel', ['id' => $r->id]),
-                    'attributes' => ['class' => ['ico', 'excel']]
-                ];
-            }
-
-            $links['clone'] = [
-                'title' => $this->t('Clone'),
-                'url' => Url::fromRoute('ek_sales.quotations.edit', ['id' => $r->id], ['query' => ['action' => 'clone']]),
-            ];
-
-            if (\Drupal::currentUser()->hasPermission('delete_quotation') && $r->status == 0) {
-                $links['delete'] = [
-                    'title' => $this->t('Delete'),
-                    'url' => Url::fromRoute('ek_sales.quotations.delete', ['id' => $r->id]),
-                ];
-            }
-
-
-            $options[$r->id]['operations']['data'] = [
-                '#type' => 'operations',
-                '#links' => $links,
-            ];
-        } 
-
-
-        $build['quotations_table'] = [
-            '#type' => 'table',
-            '#header' => $header,
-            '#rows' => $options,
-            '#attributes' => array('id' => 'quotations_table'),
-            '#empty' => $this->t('No quotation available.'),
-            '#attached' => array(
-                'library' => array('ek_sales/ek_sales_css', 'ek_admin/ek_admin_css'),
-            ),
+        $links['edit'] = [
+          'title' => $this->t('Edit'),
+          'url' => Url::fromRoute('ek_sales.quotations.edit', ['id' => $r->id]),
         ];
 
-        $build['pager'] = [
-            '#type' => 'pager',
+        $links['invoice'] = [
+          'title' => $this->t('Convert to invoice'),
+          'url' => Url::fromRoute('ek_sales.quotations.invoice', ['id' => $r->id]),
         ];
+      }
 
-        return $build;
+      if (\Drupal::currentUser()->hasPermission('print_share_quotation')) {
+        $links['qprint'] = [
+          'title' => $this->t('Print'),
+          'url' => Url::fromRoute('ek_sales.quotations.print_share', ['id' => $r->id]),
+          'attributes' => ['class' => ['ico', 'pdf']],
+        ];
+        $links['qexcel'] = [
+          'title' => $this->t('Excel download'),
+          'url' => Url::fromRoute('ek_sales.quotations.print_excel', ['id' => $r->id]),
+          'attributes' => ['class' => ['ico', 'excel']],
+        ];
+      }
+
+      $links['clone'] = [
+        'title' => $this->t('Clone'),
+        'url' => Url::fromRoute('ek_sales.quotations.edit', ['id' => $r->id], ['query' => ['action' => 'clone']]),
+      ];
+
+      if (\Drupal::currentUser()->hasPermission('delete_quotation') && $r->status == 0) {
+        $links['delete'] = [
+          'title' => $this->t('Delete'),
+          'url' => Url::fromRoute('ek_sales.quotations.delete', ['id' => $r->id]),
+        ];
+      }
+
+      $options[$r->id]['operations']['data'] = [
+        '#type' => 'operations',
+        '#links' => $links,
+      ];
     }
 
-    public function NewQuotations(Request $request) {
-        $build['new_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Quotation');
+    $build['quotations_table'] = [
+      '#type' => 'table',
+      '#header' => $header,
+      '#rows' => $options,
+      '#attributes' => ['id' => 'quotations_table'],
+      '#empty' => $this->t('No quotation available.'),
+      '#attached' => [
+        'library' => ['ek_sales/ek_sales_css', 'ek_admin/ek_admin_css'],
+      ],
+    ];
 
-        return $build;
+    $build['pager'] = [
+      '#type' => 'pager',
+    ];
+
+    return $build;
+  }
+
+  /**
+   *
+   */
+  public function NewQuotations(Request $request) {
+    $build['new_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Quotation');
+
+    return $build;
+  }
+
+  /**
+   *
+   */
+  public function EditQuotation(Request $request, $id) {
+    $query = Database::getConnection('external_db', 'external_db')
+      ->select('ek_sales_quotation', 'q')
+      ->fields('q', ['status'])
+      ->condition('id', $id, '=');
+    $status = $query->execute()->fetchField();
+    $clone = ($request->query->get('action') == 'clone') ? TRUE : FALSE;
+    if ($clone == TRUE || $status <> 2) {
+      $build['edit_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Quotation', $id, $clone);
+    }
+    else {
+      $opt = ['0' => $this->t('open'), 1 => $this->t('printed'), 2 => $this->t('invoiced')];
+      $url = Url::fromRoute('ek_sales.quotations.list', [], [])->toString();
+      $items['type'] = 'edit';
+      $items['message'] = ['#markup' => $this->t('@document cannot be edited.', ['@document' => $this->t('Qotation')])];
+      $items['description'] = ['#markup' => $opt[$status]];
+      $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+      $build = [
+        '#items' => $items,
+        '#theme' => 'ek_admin_message',
+        '#attached' => [
+          'library' => ['ek_admin/ek_admin_css'],
+        ],
+        '#cache' => ['max-age' => 0],
+      ];
     }
 
-    public function EditQuotation(Request $request, $id) {
-        $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_sales_quotation', 'q')
-                ->fields('q', ['status'])
-                ->condition('id', $id, '=');
-        $status = $query->execute()->fetchField();
-        $clone = ($request->query->get('action') == 'clone') ? true : false;
-        if ($clone == true || $status <> 2) {
-            $build['edit_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\Quotation', $id, $clone);
-        } else {
-            $opt = ['0' => $this->t('open'), 1 => $this->t('printed'), 2 => $this->t('invoiced')];
-            $url = Url::fromRoute('ek_sales.quotations.list', array(), array())->toString();
-            $items['type'] = 'edit';
-            $items['message'] = ['#markup' => $this->t('@document cannot be edited.', array('@document' => $this->t('Qotation')))];
-            $items['description'] = ['#markup' => $opt[$status]];
-            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
-            $build = [
-                '#items' => $items,
-                '#theme' => 'ek_admin_message',
-                '#attached' => array(
-                    'library' => array('ek_admin/ek_admin_css'),
-                ),
-                '#cache' => ['max-age' => 0,],
-            ];
+    return $build;
+  }
+
+  /**
+   *
+   */
+  public function InvoiceQuotation(Request $request, $id) {
+    $query = Database::getConnection('external_db', 'external_db')
+      ->select('ek_sales_quotation', 'q')
+      ->fields('q', ['status'])
+      ->condition('id', $id, '=');
+    $status = $query->execute()->fetchField();
+    if ($status < 2) {
+      $build['edit_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\ConvertQuotation', $id);
+    }
+    else {
+      $opt = ['0' => $this->t('open'), 1 => $this->t('printed'), 2 => $this->t('invoiced')];
+      $url = Url::fromRoute('ek_sales.quotations.list', [], [])->toString();
+      $items['type'] = 'edit';
+      $items['message'] = ['#markup' => $this->t('@document cannot be converted.', ['@document' => $this->t('Qotation')])];
+      $items['description'] = ['#markup' => $opt[$status]];
+      $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+      $build = [
+        '#items' => $items,
+        '#theme' => 'ek_admin_message',
+        '#attached' => [
+          'library' => ['ek_admin/ek_admin_css'],
+        ],
+        '#cache' => ['max-age' => 0],
+      ];
+    }
+
+    return $build;
+  }
+
+  /**
+   *
+   */
+  public function PrintShareQuotations($id) {
+
+    // Filter access to document.
+    $query = Database::getConnection('external_db', 'external_db')
+      ->select('ek_sales_quotation', 'q');
+    $query->fields('q', ['head', 'allocation', 'pcode']);
+    $query->condition('q.id', $id);
+    $data = $query->execute()->fetchObject();
+
+    $access = AccessCheck::GetCompanyByUser();
+
+    if (in_array($data->head, $access) || in_array($data->allocation, $access)) {
+      $format = 'pdf';
+      $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterPrint', $id, 'quotation', $format);
+      if (isset($_SESSION['printfilter']['filter']) && $_SESSION['printfilter']['filter'] == $id) {
+        $id = explode('_', $_SESSION['printfilter']['for_id']);
+
+        $param = serialize(
+                  [
+                    $id[0],
+                    $id[1],
+                    $_SESSION['printfilter']['signature'],
+                    $_SESSION['printfilter']['stamp'],
+                    $_SESSION['printfilter']['template'],
+                    $_SESSION['printfilter']['contact'],
+                  ]
+          );
+
+        $build['filter_mail'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterMailDoc', $param);
+        if ($data->pcode != NULL && $data->pcode != 'n/a') {
+          $build['filter_post'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterPostDoc', $param, $data->pcode);
         }
+        $path = $GLOBALS['base_url'] . "/quotations/print/pdf/" . $param;
 
-
-        return $build;
+        $iframe = "<iframe src ='" . $path . "' width='100%' height='1000px' id='view' name='view'></iframe>";
+        $build['iframe'] = $iframe;
+        $build['external'] = '<i class="fa fa-external-link" aria-hidden="true"></i>';
+      }
+      return [
+        '#items' => $build,
+        '#theme' => 'iframe',
+        '#attached' => [
+          'library' => ['ek_sales/ek_sales_print', 'ek_admin/ek_admin_css'],
+        ],
+      ];
     }
-
-    public function InvoiceQuotation(Request $request, $id) {
-        $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_sales_quotation', 'q')
-                ->fields('q', ['status'])
-                ->condition('id', $id, '=');
-        $status = $query->execute()->fetchField();
-        if ($status < 2) {
-            $build['edit_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\ConvertQuotation', $id);
-        } else {
-            $opt = ['0' => $this->t('open'), 1 => $this->t('printed'), 2 => $this->t('invoiced')];
-            $url = Url::fromRoute('ek_sales.quotations.list', array(), array())->toString();
-            $items['type'] = 'edit';
-            $items['message'] = ['#markup' => $this->t('@document cannot be converted.', array('@document' => $this->t('Qotation')))];
-            $items['description'] = ['#markup' => $opt[$status]];
-            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
-            $build = [
-                '#items' => $items,
-                '#theme' => 'ek_admin_message',
-                '#attached' => array(
-                    'library' => array('ek_admin/ek_admin_css'),
-                ),
-                '#cache' => ['max-age' => 0,],
-            ];
-        }
-
-        return $build;
+    else {
+      $url = Url::fromRoute('ek_sales.quotations.list')->toString();
+      $items['type'] = 'access';
+      $items['message'] = ['#markup' => $this->t('You are not authorized to view this content')];
+      $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+      return [
+        '#items' => $items,
+        '#theme' => 'ek_admin_message',
+        '#attached' => [
+          'library' => ['ek_admin/ek_admin_css'],
+        ],
+        '#cache' => ['max-age' => 0],
+      ];
     }
+  }
 
-    public function PrintShareQuotations($id) {
+  /**
+   *
+   */
+  public function PdfQuotations(Request $request, $param) {
+    $print = new PrintManager();
+    $print->makePdf($param);
+    return new Response('', 204);
+  }
 
-        //filter access to document
-        $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_sales_quotation', 'q');
-        $query->fields('q', ['head', 'allocation', 'pcode']);
-        $query->condition('q.id', $id);
-        $data = $query->execute()->fetchObject();
+  /**
+   * @retun
+   *  a display of quotation in html format
+   *
+   * @param
+   *  INT $id document id
+   */
+  public function Html($id) {
 
-        $access = AccessCheck::GetCompanyByUser();
+    // Filter access to document.
+    $query = "SELECT `head`, `allocation` FROM {ek_sales_quotation} WHERE id=:id";
+    $doc_data = Database::getConnection('external_db', 'external_db')
+      ->query($query, [':id' => $id])
+      ->fetchObject();
+    $access = AccessCheck::GetCompanyByUser();
+    if (in_array($doc_data->head, $access) || in_array($doc_data->allocation, $access)) {
+      $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterPrint', $id, 'quotation', 'html');
+      $document = '';
 
-        if (in_array($data->head, $access) || in_array($data->allocation, $access)) {
-            $format = 'pdf';
-            $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterPrint', $id, 'quotation', $format);
-            if (isset($_SESSION['printfilter']['filter']) && $_SESSION['printfilter']['filter'] == $id) {
-                $id = explode('_', $_SESSION['printfilter']['for_id']);
+      if (isset($_SESSION['printfilter']['filter']) && $_SESSION['printfilter']['filter'] == $id) {
+        $id = explode('_', $_SESSION['printfilter']['for_id']);
+        $doc_id = $id[0];
+        $url_pdf = Url::fromRoute('ek_sales.quotations.print_share', ['id' => $doc_id], [])->toString();
+        $url_edit = Url::fromRoute('ek_sales.quotations.edit', ['id' => $doc_id], [])->toString();
+        $param = serialize(
+                  [
+        // Id.
+                    $id[0],
+        // Source.
+                    $id[1],
+                    $_SESSION['printfilter']['signature'],
+                    $_SESSION['printfilter']['stamp'],
+                    $_SESSION['printfilter']['template'],
+                    $_SESSION['printfilter']['contact'],
+                    $url_pdf,
+                    'empty',
+                    $url_edit,
+                  ]
+          );
 
-                $param = serialize(
-                        array(
-                            $id[0],
-                            $id[1],
-                            $_SESSION['printfilter']['signature'],
-                            $_SESSION['printfilter']['stamp'],
-                            $_SESSION['printfilter']['template'],
-                            $_SESSION['printfilter']['contact'],
-                        )
-                );
-
-                $build['filter_mail'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterMailDoc', $param);
-                if ($data->pcode != null && $data->pcode != 'n/a') {
-                    $build['filter_post'] = $this->formBuilder->getForm('Drupal\ek_admin\Form\FilterPostDoc', $param, $data->pcode);
-                }
-                $path = $GLOBALS['base_url'] . "/quotations/print/pdf/" . $param;
-
-                $iframe = "<iframe src ='" . $path . "' width='100%' height='1000px' id='view' name='view'></iframe>";
-                $build['iframe'] = $iframe;
-                $build['external'] = '<i class="fa fa-external-link" aria-hidden="true"></i>';
-            }
-            return array(
-                '#items' => $build,
-                '#theme' => 'iframe',
-                '#attached' => array(
-                    'library' => array('ek_sales/ek_sales_print', 'ek_admin/ek_admin_css'),
-                ),
-            );
-        } else {
-            $url = Url::fromRoute('ek_sales.quotations.list')->toString();
-            $items['type'] = 'access';
-            $items['message'] = ['#markup' => $this->t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
-            return [
-                '#items' => $items,
-                '#theme' => 'ek_admin_message',
-                '#attached' => array(
-                    'library' => array('ek_admin/ek_admin_css'),
-                ),
-                '#cache' => ['max-age' => 0,],
-            ];
-        }
-    }
-
-    public function PdfQuotations(Request $request, $param) {
         $print = new PrintManager();
-        $print->makePdf($param);
-        return new \Symfony\Component\HttpFoundation\Response('', 204);
+        $document = $print->renderHtml($param);
+
+        $build['quotation'] = [
+          '#markup' => $document,
+          '#attached' => ['library' => ['ek_sales/ek_sales_html_documents_css', 'ek_admin/ek_admin_css']],
+        ];
+      }
+
+      return [$build];
+
     }
-
-    /**
-     * @retun
-     *  a display of quotation in html format
-     *
-     * @param
-     *  INT $id document id
-     */
-    public function Html($id) {
-
-        //filter access to document
-        $query = "SELECT `head`, `allocation` FROM {ek_sales_quotation} WHERE id=:id";
-        $doc_data = Database::getConnection('external_db', 'external_db')
-                ->query($query, [':id' => $id])
-                ->fetchObject();
-        $access = AccessCheck::GetCompanyByUser();
-        if (in_array($doc_data->head, $access) || in_array($doc_data->allocation, $access)) {
-            $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterPrint', $id, 'quotation', 'html');
-            $document = '';
-
-            if (isset($_SESSION['printfilter']['filter']) && $_SESSION['printfilter']['filter'] == $id) {
-                $id = explode('_', $_SESSION['printfilter']['for_id']);
-                $doc_id = $id[0];
-                $url_pdf = Url::fromRoute('ek_sales.quotations.print_share', ['id' => $doc_id], [])->toString();
-                $url_edit = Url::fromRoute('ek_sales.quotations.edit', ['id' => $doc_id], [])->toString();
-                $param = serialize(
-                        [
-                            $id[0], //id
-                            $id[1], //source
-                            $_SESSION['printfilter']['signature'],
-                            $_SESSION['printfilter']['stamp'],
-                            $_SESSION['printfilter']['template'],
-                            $_SESSION['printfilter']['contact'],
-                            $url_pdf,
-                            'empty',
-                            $url_edit
-                        ]
-                );
-
-                $print = new PrintManager(); 
-                $document = $print->renderHtml($param);
-
-                $build['quotation'] = [
-                    '#markup' => $document,
-                    '#attached' =>['library' => ['ek_sales/ek_sales_html_documents_css', 'ek_admin/ek_admin_css'],],
-                ];
-            }
-
-            return array($build);
-
-        } else {
-            $url = Url::fromRoute('ek_sales.quotations.list')->toString();
-            $items['type'] = 'access';
-            $items['message'] = ['#markup' => $this->t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
-            return [
-                '#items' => $items,
-                '#theme' => 'ek_admin_message',
-                '#attached' => array(
-                    'library' => array('ek_admin/ek_admin_css'),
-                ),
-                '#cache' => ['max-age' => 0,],
-            ];
-        }
+    else {
+      $url = Url::fromRoute('ek_sales.quotations.list')->toString();
+      $items['type'] = 'access';
+      $items['message'] = ['#markup' => $this->t('You are not authorized to view this content')];
+      $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+      return [
+        '#items' => $items,
+        '#theme' => 'ek_admin_message',
+        '#attached' => [
+          'library' => ['ek_admin/ek_admin_css'],
+        ],
+        '#cache' => ['max-age' => 0],
+      ];
     }
+  }
 
-    /**
-     * @retun
-     *  a form to download quotation in excel format
-     *
-     * @param
-     *  INT $id document id
-     */
-    public function Excel($id) {
-        //filter access to document
-        $query = "SELECT `head`, `allocation` FROM {ek_sales_quotation} WHERE id=:id";
-        $data = Database::getConnection('external_db', 'external_db')
-                ->query($query, [':id' => $id])
-                ->fetchObject();
-        $access = AccessCheck::GetCompanyByUser();
-        if (in_array($data->head, $access) || in_array($data->allocation, $access)) {
-            $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterPrint', $id, 'quotation', 'excel');
+  /**
+   * @retun
+   *  a form to download quotation in excel format
+   *
+   * @param
+   *  INT $id document id
+   */
+  public function Excel($id) {
+    // Filter access to document.
+    $query = "SELECT `head`, `allocation` FROM {ek_sales_quotation} WHERE id=:id";
+    $data = Database::getConnection('external_db', 'external_db')
+      ->query($query, [':id' => $id])
+      ->fetchObject();
+    $access = AccessCheck::GetCompanyByUser();
+    if (in_array($data->head, $access) || in_array($data->allocation, $access)) {
+      $build['filter_print'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\FilterPrint', $id, 'quotation', 'excel');
 
-            if (isset($_SESSION['printfilter']['filter']) && $_SESSION['printfilter']['filter'] == $id) {
-                //$_SESSION['printfilter']['filter'] = 0;
-                $id = explode('_', $_SESSION['printfilter']['for_id']);
+      if (isset($_SESSION['printfilter']['filter']) && $_SESSION['printfilter']['filter'] == $id) {
+        // $_SESSION['printfilter']['filter'] = 0;
+        $id = explode('_', $_SESSION['printfilter']['for_id']);
 
-                $param = serialize(
-                        array(
-                            $id[0], //id
-                            $id[1], //source
-                            $_SESSION['printfilter']['signature'],
-                            $_SESSION['printfilter']['stamp'],
-                            $_SESSION['printfilter']['template'],
-                            $_SESSION['printfilter']['contact'],
-                            $_SESSION['printfilter']['output_format'],
-                        )
-                );
-                $_SESSION['printfilter'] = array();
-                $print = new PrintManager();
-                $print->exportExcel($param);
-                return new \Symfony\Component\HttpFoundation\Response('', 204);
-            }
+        $param = serialize(
+                  [
+        // Id.
+                    $id[0],
+        // Source.
+                    $id[1],
+                    $_SESSION['printfilter']['signature'],
+                    $_SESSION['printfilter']['stamp'],
+                    $_SESSION['printfilter']['template'],
+                    $_SESSION['printfilter']['contact'],
+                    $_SESSION['printfilter']['output_format'],
+                  ]
+          );
+        $_SESSION['printfilter'] = [];
+        $print = new PrintManager();
+        $print->exportExcel($param);
+        return new Response('', 204);
+      }
 
-            return array($build);
-        } else {
-            $url = Url::fromRoute('ek_sales.quotations.list')->toString();
-            $items['type'] = 'access';
-            $items['message'] = ['#markup' => $this->t('You are not authorized to view this content')];
-            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
-            return [
-                '#items' => $items,
-                '#theme' => 'ek_admin_message',
-                '#attached' => array(
-                    'library' => array('ek_admin/ek_admin_css'),
-                ),
-                '#cache' => ['max-age' => 0,],
-            ];
-        }
+      return [$build];
     }
+    else {
+      $url = Url::fromRoute('ek_sales.quotations.list')->toString();
+      $items['type'] = 'access';
+      $items['message'] = ['#markup' => $this->t('You are not authorized to view this content')];
+      $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+      return [
+        '#items' => $items,
+        '#theme' => 'ek_admin_message',
+        '#attached' => [
+          'library' => ['ek_admin/ek_admin_css'],
+        ],
+        '#cache' => ['max-age' => 0],
+      ];
+    }
+  }
 
-    /**
-     * Render excel form for quotations list
-     *
-     * @param serialize array coid,from,to,client,status, currency
-     *
-     *
-     */
-    public function ExportExcel($param) {
-        $markup = [];
+  /**
+   * Render excel form for quotations list.
+   *
+   * @param serialize array coid,from,to,client,status, currency
+   */
+  public function ExportExcel($param) {
+    $markup = [];
 
-        if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
-            $markup = $this->t('Excel library not available, please contact administrator.');
-            return ['#markup' => $markup];
-        } else {
-            $options = unserialize($param);
-            $access = AccessCheck::GetCompanyByUser();
-            $company = implode(',', $access);
-            $status = ['0' => (string) $this->t('open'), '1' => (string) $this->t('printed'), '2' => (string) $this->t('invoiced')];
+    if (!class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet')) {
+      $markup = $this->t('Excel library not available, please contact administrator.');
+      return ['#markup' => $markup];
+    }
+    else {
+      $options = unserialize($param);
+      $access = AccessCheck::GetCompanyByUser();
+      $company = implode(',', $access);
+      $status = ['0' => (string) $this->t('open'), '1' => (string) $this->t('printed'), '2' => (string) $this->t('invoiced')];
 
-            $query = Database::getConnection('external_db', 'external_db')
-                    ->select('ek_sales_quotation', 'q');
-            $query->leftJoin('ek_address_book', 'b', 'q.client=b.id');
-            $query->leftJoin('ek_company', 'c', 'q.head=c.id');
+      $query = Database::getConnection('external_db', 'external_db')
+        ->select('ek_sales_quotation', 'q');
+      $query->leftJoin('ek_address_book', 'b', 'q.client=b.id');
+      $query->leftJoin('ek_company', 'c', 'q.head=c.id');
 
-            $or = $query->orConditionGroup();
-            $or->condition('head', $access, 'IN');
-            $or->condition('allocation', $access, 'IN');
+      $or = $query->orConditionGroup();
+      $or->condition('head', $access, 'IN');
+      $or->condition('allocation', $access, 'IN');
 
-            $result = $query
-                    ->fields('q')
-                    ->fields('b', array('name'))
-                    ->fields('c', array('name'))
-                    ->condition($or)
-                    ->condition('q.client', $options['client'], 'like')
-                    ->condition('q.date', $options['from'], '>=')
-                    ->condition('q.date', $options['to'], '<=')
-                    ->condition('q.head', $options['coid'], 'like')
-                    ->condition('q.currency', $options['currency'], 'LIKE')
-                    ->orderBy('q.id', 'ASC')
-                    ->execute();
-            //include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/excel_list_quotations.inc';
-            // Create new Excel object
-            $objPHPExcel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+      $query
+        ->fields('q')
+        ->fields('b', ['name'])
+        ->fields('c', ['name'])
+        ->condition($or)
+        ->condition('q.client', $options['client'], 'like')
+        ->condition('q.date', $options['from'], '>=')
+        ->condition('q.date', $options['to'], '<=')
+        ->condition('q.head', $options['coid'], 'like')
+        ->condition('q.currency', $options['currency'], 'LIKE')
+        ->orderBy('q.id', 'ASC');
+      if (!empty($options['pcode'])) {
+        $query->condition('q.pcode', $options['pcode']);
+      }
+      $result = $query->execute();
+      // include_once \Drupal::service('extension.path.resolver')->getPath('module', 'ek_sales') . '/excel_list_quotations.inc';
+      // Create new Excel object.
+      $objPHPExcel = new Spreadsheet();
 
-            $objPHPExcel->getProperties()->setCreator("Ek")
-                                            ->setLastModifiedBy('')
-                                            ->setTitle("Quotations list")
-                                            ->setSubject("computer generated")
-                                            ->setDescription("Quotations list filtered")
-                                            ->setKeywords("office 2007 openxml php")
-                                            ->setCategory("file");
-            $objPHPExcel->getActiveSheet()->setTitle((string)t('List'));
+      $objPHPExcel->getProperties()->setCreator("Ek")
+        ->setLastModifiedBy('')
+        ->setTitle("Quotations list")
+        ->setSubject("computer generated")
+        ->setDescription("Quotations list filtered")
+        ->setKeywords("office 2007 openxml php")
+        ->setCategory("file");
+      $objPHPExcel->getActiveSheet()->setTitle((string) t('List'));
 
-            $objPHPExcel->setActiveSheetIndex(0)
-                        ->setCellValue('A3', 'ID') 
-                        ->setCellValue('B3', (string) t('Serial'))         
-                        ->setCellValue('C3', (string) t('Client'))
-                        ->setCellValue('D3', (string) t('Project'))                     
-                        ->setCellValue('E3', (string) t('Header'))
-                        ->setCellValue('F3', (string) t('Allocated'))
-                        ->setCellValue('G3', (string) t('Status'))
-                        ->setCellValue('H3', (string) t('Amount'))
-                        ->setCellValue('I3', (string) t('Currency'))
-                        ->setCellValue('J3', (string) t('Tax'))
-                        ->setCellValue('K3', (string) t("Value"))
-                        ->setCellValue('L3', (string) t("Incoterm"))
-                        ->setCellValue('M3', (string) t("Value"))
-                        ->setCellValue('N3', (string) t('Comment'));                                                                                     
-                        
-            $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(5);
-            $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
-            $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(25);
-            $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);  
-            $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
-            $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(20);
-            $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(12);
-            $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
-            $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(10);
-            $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(10);
-            $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(10);
-            $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(10);
-            $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(10);
-            $objPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(30);
-            $objPHPExcel->getActiveSheet()->getStyle('A3:N3')->getFill()
-                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-            $objPHPExcel->getActiveSheet()->getStyle('A3:N3')
-                    ->getFill()->getStartColor()->setARGB('FFC866');
-            $objPHPExcel->getActiveSheet()->getStyle('A3:N3')
-            ->applyFromArray(
-                [
-                    'font' => ['bold' => true],
-                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,],
-                    'borders' => ['top' => ['style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]                                ]
-                ]
+      $objPHPExcel->setActiveSheetIndex(0)
+        ->setCellValue('A3', 'ID')
+        ->setCellValue('B3', (string) t('Serial'))
+        ->setCellValue('C3', (string) t('Client'))
+        ->setCellValue('D3', (string) t('Project'))
+        ->setCellValue('E3', (string) t('Header'))
+        ->setCellValue('F3', (string) t('Allocated'))
+        ->setCellValue('G3', (string) t('Status'))
+        ->setCellValue('H3', (string) t('Amount'))
+        ->setCellValue('I3', (string) t('Currency'))
+        ->setCellValue('J3', (string) t('Tax'))
+        ->setCellValue('K3', (string) t("Value"))
+        ->setCellValue('L3', (string) t("Incoterm"))
+        ->setCellValue('M3', (string) t("Value"))
+        ->setCellValue('N3', (string) t('Comment'));
+
+      $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(5);
+      $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
+      $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(25);
+      $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
+      $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
+      $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(20);
+      $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(12);
+      $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
+      $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(10);
+      $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(10);
+      $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(10);
+      $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(10);
+      $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(10);
+      $objPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(30);
+      $objPHPExcel->getActiveSheet()->getStyle('A3:N3')->getFill()
+        ->setFillType(Fill::FILL_SOLID);
+      $objPHPExcel->getActiveSheet()->getStyle('A3:N3')
+        ->getFill()->getStartColor()->setARGB('FFC866');
+      $objPHPExcel->getActiveSheet()->getStyle('A3:N3')
+        ->applyFromArray(
+            [
+              'font' => ['bold' => TRUE],
+              'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT],
+              'borders' => ['top' => ['style' => Border::BORDER_THIN]],
+            ]
             );
-            $l=3; 
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', (string)t('Quotations list')) ;
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A2', (string)t('Fom') . ':' . $options['from'] . ' ' . (string)t('to') . ':' . $options['to']) ;
-            $total = 0;
-            // store company data
-            $companies = Database::getConnection('external_db', 'external_db')
-                        ->query("SELECT id,name from {ek_company}")
-                        ->fetchAllKeyed();
-            // store a. book data
-            /*$abook = Database::getConnection('external_db', 'external_db')
-                        ->query("SELECT id,name from {ek_address_book}")
-                        ->fetchAllKeyed();*/
+      $l = 3;
+      $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', (string) t('Quotations list'));
+      $objPHPExcel->setActiveSheetIndex(0)->setCellValue('A2', (string) t('Fom') . ':' . $options['from'] . ' ' . (string) t('to') . ':' . $options['to']);
+      $total = 0;
+      // Store company data.
+      $companies = Database::getConnection('external_db', 'external_db')
+        ->query("SELECT id,name from {ek_company}")
+        ->fetchAllKeyed();
+      // Store a. book data.
+      /*$abook = Database::getConnection('external_db', 'external_db')
+      ->query("SELECT id,name from {ek_address_book}")
+      ->fetchAllKeyed();*/
 
-            WHILE ($data = $result->fetchAssoc()) {
-                
-                //$client_name = $abook[$data['client']];
-                $l=$l+1; 
-                if ($l & 1) {
-                    $row="A".$l.":N".$l;
-                    $objPHPExcel->getActiveSheet()->getStyle("$row")
-                            ->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-                    $objPHPExcel->getActiveSheet()->getStyle("$row")
-                            ->getFill()->getStartColor()->setARGB('e6e6fa');
-                    } 
+      while ($data = $result->fetchAssoc()) {
 
-                $total += $data['amount'];
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", $data['id']);
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$l", $data['serial']);
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$l", $data['name']);
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$l", $data['pcode']);
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("E$l", $companies[$data['head']]);
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("F$l", $companies[$data['allocation']]);
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("G$l", $status[$data['status']]);
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$l", $data['amount']);
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$l", $data['currency']);
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l", explode('|', $data['tax'])[0]);
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l", round(explode('|', $data['tax'])[1]*$data['amount']/100,2) );
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$l", explode('|', $data['incoterm'])[0]);
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("M$l", round(explode('|', $data['incoterm'])[1]*$data['amount']/100,2));
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", $data['comment']);
-                $objPHPExcel->getActiveSheet()->getStyle("H$l")
-                    ->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-
-            }
-            $l+=1;
-            if($options['currency'] != '%'){
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", (string)t('TOTAL') );
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$l", $total);
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$l", $options['currency']);
-                $objPHPExcel->getActiveSheet()->getStyle("H$l")
-                    ->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-            }
-            $date = date('Y-m-d h:i:s');
-            $l+=2;
-            $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", $date);
-
-            $fileName = 'quotations_list.xlsx';    
-                header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                header('Cache-Control: max-age=0');
-                header("Content-Disposition: attachment;filename=$fileName");
-                header('Cache-Control: max-age=0');
-                $objWriter = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($objPHPExcel);
-                $objWriter->save('php://output');    
-            exit;
-        }
-    }
-
-    public function DeleteQuotations(Request $request, $id) {
-        //filter del
-        $query = Database::getConnection('external_db', 'external_db')
-                ->select('ek_sales_quotation', 'q')
-                ->fields('q', ['status'])
-                ->condition('id', $id, '=');
-        $status = $query->execute()->fetchField();
-        if ($status == '0') {
-            $build['delete_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\DeleteQuotation', $id);
-        } else {
-            $items = [];
-            $opt = ['0' => $this->t('Open'), 1 => $this->t('Printed'), 2 => $this->t('Invoiced')];
-            $url = Url::fromRoute('ek_sales.purchases.list', array(), array())->toString();
-            $items['type'] = 'delete';
-            $items['message'] = ['#markup' => $this->t('@document cannot be deleted.', array('@document' => $this->t('Quotation')))];
-            $items['description'] = ['#markup' => $opt[$status]];
-            $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
-            $build['delete_quotation'] = [
-                '#items' => $items,
-                '#theme' => 'ek_admin_message',
-                '#attached' => array(
-                    'library' => array('ek_admin/ek_admin_css'),
-                ),
-                '#cache' => ['max-age' => 0,],
-            ];
+        // $client_name = $abook[$data['client']];
+        $l = $l + 1;
+        if ($l & 1) {
+          $row = "A" . $l . ":N" . $l;
+          $objPHPExcel->getActiveSheet()->getStyle("$row")
+            ->getFill()->setFillType(Fill::FILL_SOLID);
+          $objPHPExcel->getActiveSheet()->getStyle("$row")
+            ->getFill()->getStartColor()->setARGB('e6e6fa');
         }
 
-        return $build;
+        $total += $data['amount'];
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", $data['id']);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("B$l", $data['serial']);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("C$l", $data['name']);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("D$l", $data['pcode']);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("E$l", $companies[$data['head']]);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("F$l", $companies[$data['allocation']]);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("G$l", $status[$data['status']]);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$l", $data['amount']);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$l", $data['currency']);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("J$l", explode('|', $data['tax'])[0]);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("K$l", round(explode('|', $data['tax'])[1] * $data['amount'] / 100, 2));
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("L$l", explode('|', $data['incoterm'])[0]);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("M$l", round(explode('|', $data['incoterm'])[1] * $data['amount'] / 100, 2));
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("N$l", $data['comment']);
+        $objPHPExcel->getActiveSheet()->getStyle("H$l")
+          ->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+
+      }
+      $l += 1;
+      if ($options['currency'] != '%') {
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", (string) t('TOTAL'));
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("H$l", $total);
+        $objPHPExcel->setActiveSheetIndex(0)->setCellValue("I$l", $options['currency']);
+        $objPHPExcel->getActiveSheet()->getStyle("H$l")
+          ->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+      }
+      $date = date('Y-m-d h:i:s');
+      $l += 2;
+      $objPHPExcel->setActiveSheetIndex(0)->setCellValue("A$l", $date);
+
+      $fileName = 'quotations_list.xlsx';
+      header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      header('Cache-Control: max-age=0');
+      header("Content-Disposition: attachment;filename=$fileName");
+      header('Cache-Control: max-age=0');
+      $objWriter = new Xlsx($objPHPExcel);
+      $objWriter->save('php://output');
+      exit;
     }
+  }
+
+  /**
+   *
+   */
+  public function DeleteQuotations(Request $request, $id) {
+    // Filter del.
+    $query = Database::getConnection('external_db', 'external_db')
+      ->select('ek_sales_quotation', 'q')
+      ->fields('q', ['status'])
+      ->condition('id', $id, '=');
+    $status = $query->execute()->fetchField();
+    if ($status == '0') {
+      $build['delete_quotation'] = $this->formBuilder->getForm('Drupal\ek_sales\Form\DeleteQuotation', $id);
+    }
+    else {
+      $items = [];
+      $opt = ['0' => $this->t('Open'), 1 => $this->t('Printed'), 2 => $this->t('Invoiced')];
+      $url = Url::fromRoute('ek_sales.purchases.list', [], [])->toString();
+      $items['type'] = 'delete';
+      $items['message'] = ['#markup' => $this->t('@document cannot be deleted.', ['@document' => $this->t('Quotation')])];
+      $items['description'] = ['#markup' => $opt[$status]];
+      $items['link'] = ['#markup' => $this->t('Go to <a href="@url">List</a>.', ['@url' => $url])];
+      $build['delete_quotation'] = [
+        '#items' => $items,
+        '#theme' => 'ek_admin_message',
+        '#attached' => [
+          'library' => ['ek_admin/ek_admin_css'],
+        ],
+        '#cache' => ['max-age' => 0],
+      ];
+    }
+
+    return $build;
+  }
 
 }
