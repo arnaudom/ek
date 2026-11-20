@@ -202,7 +202,7 @@
 				ajaxSettings.complete = function (xhr, success) {
 						 pu_log("Status of call: " + success + " (In 'complete')", 2);
 						if (success == "success" || success == "notmodified") {
-								var rawData = $.trim(xhr.responseText);
+								var rawData = xhr.responseText.trim();
 								if (prevData == rawData) {
 										if (autoStop > 0) {
 												noChange++;
