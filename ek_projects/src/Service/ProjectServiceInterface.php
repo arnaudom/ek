@@ -230,7 +230,7 @@ interface ProjectServiceInterface {
    *   The project code.
    *
    * @return array
-   *   Array of project data.
+   *   An associative array with finance, invoices, and purchases entries.
    */
   public function getProjectFinance($project_code);
 

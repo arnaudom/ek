@@ -815,11 +815,9 @@ class ProjectService implements ProjectServiceInterface {
         ->condition('p.pcode', $project_code, '=');
 
       $results = $query->execute()->fetchAll();
-      $fold = ['fi' => 'finance', 'com' => 'info'];
-
-      $projects = [];
+      $finance = [];
       foreach ($results as $row) {
-        $projects[] = [
+        $finance[] = [
           'currency' => $row->currency,
           'payment_terms' => $row->payment_terms,
           'purchase_value' => $row->purchase_value,
@@ -834,14 +832,48 @@ class ProjectService implements ProjectServiceInterface {
         ];
       }
 
-      return $projects;
+      $status = ['0' => 'unpaid', '1' => 'paid', '2' => 'partially paid'];
+      $types = ['1' => 'invoice', '2' => 'invoice', '4' => 'CN', '5' => 'proforma'];
+      $query = $this->extdb->select('ek_sales_invoice', 'i')
+        ->fields('i', ['serial', 'amountbase', 'currency', 'status', 'type'])
+        ->condition('i.pcode', $project_code, '=');
+      $invoice_results = $query->execute()->fetchAll();
+      $invoices = [];
+      foreach ($invoice_results as $row) {
+        $invoices[] = [
+          'serial' => $row->serial,
+          'amount' => $row->amountbase . ' ' . $row->currency,
+          'status' => $status[$row->status],
+          'type' => $types[$row->type],
+        ];
+      }
+      $types = ['1' => 'purchase', '4' => 'DN',];
+      $query = $this->extdb->select('ek_sales_purchase', 'p')
+        ->fields('p', ['serial', 'amountbase', 'currency', 'status', 'type'])
+        ->condition('p.pcode', $project_code, '=');
+      $purchase_results = $query->execute()->fetchAll();
+      $purchases = [];
+      foreach ($purchase_results as $row) {
+        $purchases[] = [
+          'serial' => $row->serial,
+          'amount' => $row->amountbase. ' ' . $row->currency,
+          'status' => $status[$row->status],
+          'type' => $types[$row->type],
+        ];
+      }
+
+      return [
+        'finance' => $finance,
+        'invoices' => $invoices,
+        'purchases' => $purchases,
+      ];
 
     }
     catch (\Exception $e) {
-      $this->logger->error('Error getting project documents: @message', [
+      $this->logger->error('Error getting project finance data: @message', [
         '@message' => $e->getMessage(),
       ]);
-      return ['data' => NULL];
+      throw new \RuntimeException('Unable to retrieve project finance data', 0, $e);
     }
   }
 
