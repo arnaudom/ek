@@ -101,6 +101,10 @@ table.report tbody td.red {
     color: #c0392b;
 }
 
+table.report tbody td.op-status-awarded {
+    background: #64fe2e;
+}
+
 table.report tbody tr.data0:nth-child(even) {
     background: #fafbfc;
 }

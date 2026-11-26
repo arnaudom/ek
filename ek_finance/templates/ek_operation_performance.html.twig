@@ -8,7 +8,7 @@
 {% set year = items.year %}
 <p>{{ 'Operations'|trans }} {{ 'from'|trans }}: {{ items.fiscal_dates.from }} {{ 'to'|trans }}: {{ items.fiscal_dates.to }}</p>
 <div class="op-report-help">
-    {{ 'The reporting period follows the company’s account year-end closing month; the dates above show the exact period. Revenue, purchases, and period activity reflect transactions posted during that period. Gross margin is revenue minus purchases and is shown only for completed projects; WIP projects have activity on only one side, so their results may be incomplete. The report can help to identify projects not yet completed across accounting periods. Outstanding receivables and payables are current unpaid balances, not balances at year-end. Totals include awarded and completed projects only.'|trans }}
+    {{ 'The reporting period follows the company’s account year-end closing month; the dates above show the exact period. Period invoices, purchases, and activity reflect transactions posted during that period. Total per project includes all invoice and purchase transactions regardless of fiscal dates. Gross margin is based on those all-time totals for awarded and completed projects. Totals include awarded and completed projects with invoice and purchase activity during the selected period.'|trans }}
 </div>
 
 {# --- Summary Cards --- 
@@ -80,9 +80,8 @@
     <thead>
         <th colspan=3 class='column_top header_th'></th>
         <th colspan=2 class='column_top header_th'>{{ 'Total for period'|trans }}</th>
-        <th colspan=2 class='column_top header_th'></th>
-        <th colspan=2 class='column_top header_th'>{{ 'Total outstanding per project'|trans }}</th>
-        <th class='column_top header_th'></th>
+        <th colspan=2 class='column_top header_th'>{{ 'Total per project'|trans }}</th>
+        <th colspan=2 class='column_top header_th'>{{ 'Gross Margin'|trans }}</th>
     </thead>
     <thead>
         <th class='column_check header_th'>{{ 'Select'|trans }}</th>
@@ -94,15 +93,14 @@
         <th class='column_value header_th'>{{ 'Status'|trans }}</th>
         <th class='column_value header_th'>{{ 'Invoices'|trans }}</th>
         <th class='column_value header_th'>{{ 'Purchases'|trans }}</th>
-        <th class='column_value header_th'>{{ 'Gross Margin'|trans }}</th>
-        <th class='column_value header_th'>{{ '%' }}</th>
         <th class='column_value header_th'>{{ 'Invoice'|trans }}</th>
         <th class='column_value header_th'>{{ 'Purchase'|trans }}</th>
-        <th class='column_value header_th'></th>
+        <th class='column_value header_th'>{{ 'Gross Margin'|trans }}</th>
+        <th class='column_value header_th'>{{ '%' }}</th>
     </thead>
     <tbody id='project_data_body'>
     {% if items.projects is empty %}
-        <tr><td colspan='10' class='center'>{{ 'No data for the selected period.'|trans }}</td></tr>
+        <tr><td colspan='9' class='center'>{{ 'No data for the selected period.'|trans }}</td></tr>
     {% else %}
         {% for project in items.projects %}
         <tr class='data0{% if project.wip %} wip-row{% endif %}'>
@@ -113,35 +111,33 @@
                     data-pcode='{{ project.pcode }}'>
             </td>
             <td class='left'>{{ project.pcode_url|raw }}</td>
-            <td class='center'>{{ project.status }}</td>
+            <td class='center{% if project.status == 'awarded' %} op-status-awarded{% endif %}'>{{ project.status }}</td>
             <td class='right {% if project.revenue is not null and project.revenue == 0 %}red{% endif %}'>{{ project.revenue|number_format(rounding) }}</td>
             <td class='right {% if project.cost is not null and project.cost == 0 %}red{% endif %}'>{{ project.cost|number_format(rounding) }}</td>
+            <td class='right'>{{ project.total_invoice|number_format(rounding) }}</td>
+            <td class='right'>{{ project.total_purchase|number_format(rounding) }}</td>
             <td class='right {% if project.gross_margin is not null and project.gross_margin < 0 %}red{% endif %}'>
                 {{ project.gross_margin is not null ? project.gross_margin|number_format(rounding) : '--' }}
             </td>
             <td class='right {% if project.gm_percent is not null and project.gm_percent < 0 %}red{% endif %}'>
                 {{ project.gm_percent is not null ? project.gm_percent ~ '%' : '--' }}
             </td>
-            <td class='right'>{{ project.ar_outstanding|number_format(rounding) }}</td>
-            <td class='right'>{{ project.ap_outstanding|number_format(rounding) }}</td>
-            <td class='center'>{{ project.wip ? 'incomplete'|trans : '' }}</td>
         </tr>
         {% endfor %}
         {# Totals row #}
         <tr class='total-row'>
-            <td class='center'></td>
             <td class='left'><strong>{{ 'Totals'|trans }}</strong></td>
             <td class='center'></td>
             <td class='right'><strong><span id='op-selected-revenue'>{{ items.totals.revenue|number_format(rounding) }}</span></strong></td>
             <td class='right'><strong><span id='op-selected-cost'>{{ items.totals.cost|number_format(rounding) }}</span></strong></td>
-            <td class='right {% if items.totals.gross_margin < 0 %}red{% endif %}'>
-                <strong>{{ items.totals.gross_margin|number_format(rounding) }}</strong>
+            <td class='right'><strong>{{ items.totals.total_invoice|number_format(rounding) }}</strong></td>
+            <td class='right'><strong>{{ items.totals.total_purchase|number_format(rounding) }}</strong></td>
+            <td class='right {% if items.totals.project_gross_margin < 0 %}red{% endif %}'>
+                <strong>{{ items.totals.project_gross_margin|number_format(rounding) }}</strong>
             </td>
-            <td class='right {% if items.totals.gm_percent < 0 %}red{% endif %}'>
-                <strong>{{ items.totals.gm_percent }}%</strong>
+            <td class='right {% if items.totals.project_gm_percent < 0 %}red{% endif %}'>
+                <strong>{{ items.totals.project_gm_percent }}%</strong>
             </td>
-            <td class='right'><strong></strong></td>
-            <td class='right'><strong></strong></td>
             <td class='center'></td>
         </tr>
     {% endif %}

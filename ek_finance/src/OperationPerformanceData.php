@@ -134,6 +134,7 @@ class OperationPerformanceData {
         }
 
         $statuses = $this->getProjectStatuses($pcodes);
+        $totalProjectValues = $this->getTotalProjectValues($pcodes);
         $outstanding = $this->getOutstandingBalances($pcodes);
         $periodActivity = $this->getPeriodActivity();
         $fiscalDates = $this->getFiscalDates();
@@ -143,6 +144,9 @@ class OperationPerformanceData {
             'revenue' => 0,
             'cost' => 0,
             'gross_margin' => 0,
+            'total_invoice' => 0,
+            'total_purchase' => 0,
+            'project_gross_margin' => 0,
             'ar_outstanding' => 0,
             'ap_outstanding' => 0,
             'project_count' => 0,
@@ -151,6 +155,8 @@ class OperationPerformanceData {
         foreach ($projects as $pcode => $data) {
             $revenue = round($data['invoice_amount'] ?? 0, $this->rounding);
             $cost = round($data['purchase_amount'] ?? 0, $this->rounding);
+            $totalInvoice = round($totalProjectValues[$pcode]['invoice'] ?? 0, $this->rounding);
+            $totalPurchase = round($totalProjectValues[$pcode]['purchase'] ?? 0, $this->rounding);
             $status = $statuses[$pcode] ?? '--';
             $arOutstanding = round($outstanding[$pcode]['ar'] ?? 0, $this->rounding);
             $apOutstanding = round($outstanding[$pcode]['ap'] ?? 0, $this->rounding);
@@ -160,10 +166,11 @@ class OperationPerformanceData {
             $hasPurchases = ($data['purchase_count'] ?? 0) > 0;
             $wipFlag = ($hasInvoices xor $hasPurchases);
 
-            // Gross margin only accurate for completed projects.
-            $isCompleted = ($status === 'completed');
-            $grossMargin = $isCompleted ? round($revenue - $cost, $this->rounding) : null;
-            $gmPercent = ($isCompleted && $revenue > 0) ? round(($grossMargin / $revenue) * 100, 1) : null;
+            $includedInTotals = !$wipFlag && in_array($status, ['awarded', 'completed'], TRUE);
+            $grossMargin = $includedInTotals ? round($totalInvoice - $totalPurchase, $this->rounding) : null;
+            $gmPercent = ($grossMargin !== null && $totalInvoice > 0)
+                ? round(($grossMargin / $totalInvoice) * 100, 1)
+                : null;
 
             $row = [
                 'pcode' => $pcode,
@@ -171,6 +178,8 @@ class OperationPerformanceData {
                 'status' => $status,
                 'revenue' => $revenue,
                 'cost' => $cost,
+                'total_invoice' => $totalInvoice,
+                'total_purchase' => $totalPurchase,
                 'gross_margin' => $grossMargin,
                 'gm_percent' => $gmPercent,
                 'ar_outstanding' => $arOutstanding,
@@ -183,12 +192,13 @@ class OperationPerformanceData {
             $allProjects[] = $row;
 
             // Only non-WIP projects with awarded/completed status contribute to totals.
-            if (!$wipFlag && in_array($status, ['awarded', 'completed'])) {
+            if ($includedInTotals) {
                 $totals['revenue'] += $revenue;
                 $totals['cost'] += $cost;
-                if ($isCompleted) {
-                    $totals['gross_margin'] += $grossMargin;
-                }
+                $totals['total_invoice'] += $totalInvoice;
+                $totals['total_purchase'] += $totalPurchase;
+                $totals['gross_margin'] += round($revenue - $cost, $this->rounding);
+                $totals['project_gross_margin'] += $grossMargin;
                 $totals['ar_outstanding'] += $arOutstanding;
                 $totals['ap_outstanding'] += $apOutstanding;
                 $totals['project_count']++;
@@ -199,10 +209,16 @@ class OperationPerformanceData {
         $totals['revenue'] = round($totals['revenue'], $this->rounding);
         $totals['cost'] = round($totals['cost'], $this->rounding);
         $totals['gross_margin'] = round($totals['gross_margin'], $this->rounding);
+        $totals['total_invoice'] = round($totals['total_invoice'], $this->rounding);
+        $totals['total_purchase'] = round($totals['total_purchase'], $this->rounding);
+        $totals['project_gross_margin'] = round($totals['project_gross_margin'], $this->rounding);
         $totals['ar_outstanding'] = round($totals['ar_outstanding'], $this->rounding);
         $totals['ap_outstanding'] = round($totals['ap_outstanding'], $this->rounding);
         $totals['gm_percent'] = ($totals['revenue'] > 0)
             ? round(($totals['gross_margin'] / $totals['revenue']) * 100, 1)
+            : 0;
+        $totals['project_gm_percent'] = ($totals['total_invoice'] > 0)
+            ? round(($totals['project_gross_margin'] / $totals['total_invoice']) * 100, 1)
             : 0;
 
         // Summary cards.
@@ -290,6 +306,60 @@ class OperationPerformanceData {
         }
 
         return $projects;
+    }
+
+    /**
+     * Gets all-time invoice and purchase journal totals for project codes.
+     *
+     * @param array $pcodes
+     *   Array of project codes.
+     *
+     * @return array
+     *   Associative array keyed by pcode with invoice and purchase totals.
+     */
+    private function getTotalProjectValues(array $pcodes) {
+        $totals = [];
+        foreach ($pcodes as $pcode) {
+            $totals[$pcode] = ['invoice' => 0, 'purchase' => 0];
+        }
+
+        if (empty($pcodes)) {
+            return $totals;
+        }
+
+        $extdb = Database::getConnection('external_db', 'external_db');
+
+        $query = $extdb->select('ek_journal', 'j');
+        $query->leftJoin('ek_sales_invoice', 'i', 'i.id = j.reference AND j.source = :source_inv',
+            [':source_inv' => 'invoice']);
+        $query->addExpression('SUM(j.value)', 'invoice_amount');
+        $query->addExpression('i.pcode', 'pcode');
+        $query->condition('j.coid', $this->coid);
+        $query->condition('j.source', 'invoice');
+        $query->condition('j.type', 'credit');
+        $query->isNotNull('i.pcode');
+        $query->condition('i.pcode', $pcodes, 'IN');
+        $query->groupBy('i.pcode');
+        foreach ($query->execute()->fetchAllAssoc('pcode') as $pcode => $row) {
+            $totals[$pcode]['invoice'] = (float) $row->invoice_amount;
+        }
+
+        $query = $extdb->select('ek_journal', 'j');
+        $query->leftJoin('ek_sales_purchase', 'p', 'p.id = j.reference AND j.source = :source_pur',
+            [':source_pur' => 'purchase']);
+        $query->addExpression('SUM(j.value)', 'purchase_amount');
+        $query->addExpression('p.pcode', 'pcode');
+        $query->condition('j.coid', $this->coid);
+        $query->condition('j.source', 'purchase');
+        $query->condition('j.type', 'debit');
+        $query->isNotNull('p.pcode');
+        $query->condition('p.pcode', $pcodes, 'IN');
+        $query->groupBy('p.pcode');
+        foreach ($query->execute()->fetchAllAssoc('pcode') as $pcode => $row) {
+            $totals[$pcode]['purchase'] = (float) $row->purchase_amount;
+        }
+
+        return $totals;
     }
 
     /**

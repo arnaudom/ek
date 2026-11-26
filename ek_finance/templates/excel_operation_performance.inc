@@ -44,20 +44,20 @@ $row = 1;
 // Title.
 $sheet->setCellValue("A{$row}", 'Operation Performance Report');
 $sheet->getStyle("A{$row}")->applyFromArray($titleStyle);
-$sheet->mergeCells("A{$row}:J{$row}");
+$sheet->mergeCells("A{$row}:H{$row}");
 $row++;
 
 $sheet->setCellValue("A{$row}", "Company: {$companyName}  |  Fiscal Year: {$year}  |  Currency: {$baseCurrency}");
 $sheet->getStyle("A{$row}")->applyFromArray($subtitleStyle);
-$sheet->mergeCells("A{$row}:J{$row}");
+$sheet->mergeCells("A{$row}:H{$row}");
 $row++;
 
 $sheet->setCellValue("A{$row}", 'Period: ' . $data['fiscal_dates']['from'] . ' to ' . $data['fiscal_dates']['to']);
-$sheet->mergeCells("A{$row}:J{$row}");
+$sheet->mergeCells("A{$row}:H{$row}");
 $row++;
 
 $sheet->setCellValue("A{$row}", 'Generated: ' . date('Y-m-d H:i'));
-$sheet->mergeCells("A{$row}:J{$row}");
+$sheet->mergeCells("A{$row}:H{$row}");
 $row += 2;
 
 // Summary section.
@@ -100,7 +100,7 @@ $sheet->getStyle("B{$row}")->getNumberFormat()->setFormatCode($numberFormat);
 $row += 3;
 
 // Single Project Detail table.
-$headers = ['', '','Total for period', '','', '','Total outstanding per project', '', ''];
+$headers = ['', '', 'Total for period', '', 'Total per project', '', 'Gross Margin', ''];
 $col = 'A';
 foreach ($headers as $h) {
     $sheet->setCellValue("{$col}{$row}", $h);
@@ -112,7 +112,7 @@ $sheet->mergeCells("C{$row}:D{$row}");
 $sheet->mergeCells("E{$row}:F{$row}");
 $sheet->mergeCells("G{$row}:H{$row}");
 $row++;
-$headers = ['Project Code', 'Status', 'Invoices', 'Purchases', 'Gross Margin', '%', 'Invoices', 'Purchases', ''];
+$headers = ['Project Code', 'Status', 'Invoices', 'Purchases', 'Invoices', 'Purchases', 'Gross Margin', '%'];
 $col = 'A';
 foreach ($headers as $h) {
     $sheet->setCellValue("{$col}{$row}", $h);
@@ -120,12 +120,13 @@ foreach ($headers as $h) {
     $col++;
 }
 $row++;
-$sum_row_in = $row;
 foreach ($data['projects'] as $project) {
     $sheet->setCellValue("A{$row}", $project['pcode']);
     $sheet->setCellValue("B{$row}", $project['status']);
     $sheet->setCellValue("C{$row}", $project['revenue']);
     $sheet->setCellValue("D{$row}", $project['cost']);
+    $sheet->setCellValue("E{$row}", $project['total_invoice']);
+    $sheet->setCellValue("F{$row}", $project['total_purchase']);
     if ($project['revenue'] !== null && $project['revenue'] <= 0) {
         $sheet->getStyle("C{$row}")->getFont()->getColor()->setRGB('C0392B');
     }
@@ -133,53 +134,48 @@ foreach ($data['projects'] as $project) {
         $sheet->getStyle("D{$row}")->getFont()->getColor()->setRGB('C0392B');
     }
 
-    // Gross margin only for completed projects.
+    // Gross margin is based on all-time totals for projects included in totals.
     if ($project['gross_margin'] !== null) {
-        $sheet->setCellValue("E{$row}", $project['gross_margin']);
-        $sheet->setCellValue("F{$row}", $project['gm_percent'] / 100);
+        $sheet->setCellValue("G{$row}", $project['gross_margin']);
+        $sheet->setCellValue("H{$row}", $project['gm_percent'] / 100);
     } else {
-        $sheet->setCellValue("E{$row}", '--');
-        $sheet->setCellValue("F{$row}", '--');
+        $sheet->setCellValue("G{$row}", '--');
+        $sheet->setCellValue("H{$row}", '--');
     }
 
-    $sheet->setCellValue("G{$row}", $project['ar_outstanding']);
-    $sheet->setCellValue("H{$row}", $project['ap_outstanding']);
-    $sheet->setCellValue("I{$row}", $project['wip'] ? 'incomplete' : '');
-
-    $sheet->getStyle("C{$row}:D{$row}")->getNumberFormat()->setFormatCode($numberFormat);
-    $sheet->getStyle("C{$row}:D{$row}")->applyFromArray($rightAlign);
+    $sheet->getStyle("C{$row}:F{$row}")->getNumberFormat()->setFormatCode($numberFormat);
+    $sheet->getStyle("C{$row}:H{$row}")->applyFromArray($rightAlign);
     if ($project['gross_margin'] !== null) {
-        $sheet->getStyle("E{$row}")->getNumberFormat()->setFormatCode($numberFormat);
-        $sheet->getStyle("F{$row}")->getNumberFormat()->setFormatCode($percentFormat);
+        $sheet->getStyle("G{$row}")->getNumberFormat()->setFormatCode($numberFormat);
+        $sheet->getStyle("H{$row}")->getNumberFormat()->setFormatCode($percentFormat);
     }
-    $sheet->getStyle("G{$row}:H{$row}")->getNumberFormat()->setFormatCode($numberFormat);
-    $sheet->getStyle("G{$row}:H{$row}")->applyFromArray($rightAlign);
 
     if ($project['wip']) {
-        $sheet->getStyle("A{$row}:I{$row}")->applyFromArray($wipStyle);
+        $sheet->getStyle("A{$row}:H{$row}")->applyFromArray($wipStyle);
+    }
+    if ($project['status'] === 'awarded') {
+        $sheet->getStyle("B{$row}")->getFill()->setFillType(Fill::FILL_SOLID);
+        $sheet->getStyle("B{$row}")->getFill()->getStartColor()->setRGB('64FE2E');
     }
     if ($project['gross_margin'] !== null && $project['gross_margin'] < 0) {
-        $sheet->getStyle("E{$row}")->getFont()->getColor()->setRGB('C0392B');
+        $sheet->getStyle("G{$row}")->getFont()->getColor()->setRGB('C0392B');
     }
     $row++;
 }
-$sum_row_out = $row;
 // Totals row.
 $totals = $data['totals'];
 $sheet->setCellValue("A{$row}", 'Totals');
 $sheet->setCellValue("B{$row}", '');
-$sheet->setCellValue("C{$row}", "=SUM(C$sum_row_in:C$sum_row_out)");
-$sheet->setCellValue("D{$row}", "=SUM(D$sum_row_in:D$sum_row_out)");
-$sheet->setCellValue("E{$row}", $totals['gross_margin']);
-$sheet->setCellValue("F{$row}", $totals['gm_percent'] / 100);
-$sheet->setCellValue("G{$row}", "=SUM(G$sum_row_in:G$sum_row_out)");
-$sheet->setCellValue("H{$row}", "=SUM(G$sum_row_in:H$sum_row_out)");
-$sheet->setCellValue("I{$row}", '');
+$sheet->setCellValue("C{$row}", $totals['revenue']);
+$sheet->setCellValue("D{$row}", $totals['cost']);
+$sheet->setCellValue("E{$row}", $totals['total_invoice']);
+$sheet->setCellValue("F{$row}", $totals['total_purchase']);
+$sheet->setCellValue("G{$row}", $totals['project_gross_margin']);
+$sheet->setCellValue("H{$row}", $totals['project_gm_percent'] / 100);
 
-$sheet->getStyle("A{$row}:I{$row}")->applyFromArray($totalStyle);
-$sheet->getStyle("C{$row}:E{$row}")->getNumberFormat()->setFormatCode($numberFormat);
-$sheet->getStyle("F{$row}")->getNumberFormat()->setFormatCode($percentFormat);
-$sheet->getStyle("G{$row}:H{$row}")->getNumberFormat()->setFormatCode($numberFormat);
+$sheet->getStyle("A{$row}:H{$row}")->applyFromArray($totalStyle);
+$sheet->getStyle("C{$row}:G{$row}")->getNumberFormat()->setFormatCode($numberFormat);
+$sheet->getStyle("H{$row}")->getNumberFormat()->setFormatCode($percentFormat);
 
 // Column widths.
 $sheet->getColumnDimension('A')->setWidth(30);
@@ -190,7 +186,6 @@ $sheet->getColumnDimension('E')->setWidth(16);
 $sheet->getColumnDimension('F')->setWidth(10);
 $sheet->getColumnDimension('G')->setWidth(16);
 $sheet->getColumnDimension('H')->setWidth(16);
-$sheet->getColumnDimension('I')->setWidth(20);
 
 // Output.
 $writer = new Xlsx($spreadsheet);
