@@ -835,13 +835,14 @@ class ProjectService implements ProjectServiceInterface {
       $status = ['0' => 'unpaid', '1' => 'paid', '2' => 'partially paid'];
       $types = ['1' => 'invoice', '2' => 'invoice', '4' => 'CN', '5' => 'proforma'];
       $query = $this->extdb->select('ek_sales_invoice', 'i')
-        ->fields('i', ['serial', 'amountbase', 'currency', 'status', 'type'])
+        ->fields('i', ['serial', 'amountbase', 'currency', 'status', 'type', 'head'])
         ->condition('i.pcode', $project_code, '=');
       $invoice_results = $query->execute()->fetchAll();
       $invoices = [];
       foreach ($invoice_results as $row) {
         $invoices[] = [
           'serial' => $row->serial,
+          'company_id' => $row->head,
           'amount' => $row->amountbase . ' ' . $row->currency,
           'status' => $status[$row->status],
           'type' => $types[$row->type],
@@ -849,13 +850,14 @@ class ProjectService implements ProjectServiceInterface {
       }
       $types = ['1' => 'purchase', '4' => 'DN',];
       $query = $this->extdb->select('ek_sales_purchase', 'p')
-        ->fields('p', ['serial', 'amountbase', 'currency', 'status', 'type'])
+        ->fields('p', ['serial', 'amountbase', 'currency', 'status', 'type', 'head'])
         ->condition('p.pcode', $project_code, '=');
       $purchase_results = $query->execute()->fetchAll();
       $purchases = [];
       foreach ($purchase_results as $row) {
         $purchases[] = [
           'serial' => $row->serial,
+          'company_id' => $row->head,
           'amount' => $row->amountbase. ' ' . $row->currency,
           'status' => $status[$row->status],
           'type' => $types[$row->type],
